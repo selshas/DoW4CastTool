@@ -1,0 +1,560 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SharpHook.Reactive</name>
+    </assembly>
+    <members>
+        <member name="T:SharpHook.Reactive.IReactiveGlobalHook">
+            <summary>
+            Represents a global reactive keyboard and mouse hook.
+            </summary>
+            <remarks>
+            All observables of objects of this interface are completed when the object is disposed, unless stated otherwise.
+            </remarks>
+            <seealso cref="T:SharpHook.IGlobalHook" />
+            <seealso cref="T:SharpHook.Reactive.SimpleReactiveGlobalHook" />
+            <seealso cref="T:SharpHook.Reactive.ReactiveGlobalHookAdapter" />
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.IsRunning">
+            <summary>
+            Gets the value which indicates whether the global hook is running.
+            </summary>
+            <value><see langword="true" /> if the global hook is running. Otherwise, <see langword="false" />.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.IsDisposed">
+            <summary>
+            Gets the value which indicates whether the global hook is disposed.
+            </summary>
+            <value><see langword="true" /> if the global hook is disposed. Otherwise, <see langword="false" />.</value>
+            <remarks>A disposed global hook cannot be started again.</remarks>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.HookEnabled">
+            <summary>
+            Gets an observable which emits a value when the global hook is enabled.
+            </summary>
+            <value>An observable which emits a value when the global hook is enabled.</value>
+            <remarks>
+            The observable emits a value when the <see cref="M:SharpHook.Reactive.IReactiveGlobalHook.Run" /> or <see cref="M:SharpHook.Reactive.IReactiveGlobalHook.RunAsync" /> method is called and
+            then immediately completes.
+            </remarks>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.HookDisabled">
+            <summary>
+            Gets an observable which emits a value when the global hook is disabled.
+            </summary>
+            <value>An observable which emits a value when the global hook is disabled.</value>
+            <remarks>
+            The observable emits a value when the <see cref="M:System.IDisposable.Dispose" /> method is called and then
+            immediately completes.
+            </remarks>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.KeyTyped">
+            <summary>
+            Gets an observable which emits a value when a key is typed.
+            </summary>
+            <value>An observable which emits a value when a key is typed.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.KeyPressed">
+            <summary>
+            Gets an observable which emits a value when a key is pressed.
+            </summary>
+            <value>An observable which emits a value when a key is pressed.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.KeyReleased">
+            <summary>
+            Gets an observable which emits a value when a key is released.
+            </summary>
+            <value>An observable which emits a value when a key is released.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.MouseClicked">
+            <summary>
+            Gets an observable which emits a value when a mouse button is clicked.
+            </summary>
+            <value>An observable which emits a value when a mouse button is clicked.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.MousePressed">
+            <summary>
+            Gets an observable which emits a value when a mouse button is pressed.
+            </summary>
+            <value>An observable which emits a value when a mouse button is pressed.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.MouseReleased">
+            <summary>
+            Gets an observable which emits a value when a mouse button is released.
+            </summary>
+            <value>An observable which emits a value when a mouse button is released.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.MouseMoved">
+            <summary>
+            Gets an observable which emits a value when the mouse cursor is moved.
+            </summary>
+            <value>An observable which emits a value when the mouse cursor is moved.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.MouseDragged">
+            <summary>
+            Gets an observable which emits a value when the mouse cursor is dragged.
+            </summary>
+            <value>An observable which emits a value when the mouse cursor is dragged.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.IReactiveGlobalHook.MouseWheel">
+            <summary>
+            Gets an observable which emits a value when the mouse wheel is scrolled.
+            </summary>
+            <value>An observable which emits a value when the mouse wheel is scrolled.</value>
+        </member>
+        <member name="M:SharpHook.Reactive.IReactiveGlobalHook.Run">
+            <summary>
+            Runs the global hook on the current thread, blocking it. The hook can be destroyed by calling the
+            <see cref="M:System.IDisposable.Dispose" /> method.
+            </summary>
+            <exception cref="T:SharpHook.HookException">Starting the global hook has failed.</exception>
+            <exception cref="T:System.InvalidOperationException">The global hook is already running.</exception>
+            <exception cref="T:System.ObjectDisposedException">The global hook has been disposed.</exception>
+        </member>
+        <member name="M:SharpHook.Reactive.IReactiveGlobalHook.RunAsync">
+            <summary>
+            Runs the global hook without blocking the current thread. The hook can be destroyed by calling the
+            <see cref="M:System.IDisposable.Dispose" /> method.
+            </summary>
+            <returns>An observable which is completed when the hook is destroyed.</returns>
+            <exception cref="T:SharpHook.HookException">Starting the global hook has failed.</exception>
+            <exception cref="T:System.InvalidOperationException">The global hook is already running.</exception>
+            <exception cref="T:System.ObjectDisposedException">The global hook has been disposed.</exception>
+            <remarks>
+            <para>
+            Since the underlying native API for running a global hook is blocking, the only way to run it without blocking
+            the current thread is to run it on a separate thread.
+            </para>
+            <para>
+            The returned observable is hot. It emits a single value and then immediately completes when the hook is
+            destroyed.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:SharpHook.Reactive.Logging.IReactiveLogSource">
+            <summary>
+            Represents a reactive source of libuiohook logs.
+            </summary>
+            <seealso cref="T:SharpHook.Logging.ILogSource" />
+            <seealso cref="T:SharpHook.Logging.LogSource" />
+            <seealso cref="T:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter" />
+            <seealso cref="T:SharpHook.Logging.LogEventArgs" />
+            <seealso cref="T:SharpHook.Logging.LogEntry" />
+        </member>
+        <member name="P:SharpHook.Reactive.Logging.IReactiveLogSource.MessageLogged">
+            <summary>
+            An observable which is emitted when libuiohook logs a message.
+            </summary>
+        </member>
+        <member name="P:SharpHook.Reactive.Logging.IReactiveLogSource.IsDisposed">
+            <summary>
+            Gets the value which indicates whether the log source is disposed.
+            </summary>
+            <value><see langword="true" /> if the log source is disposed. Otherwise, <see langword="false" />.</value>
+            <remarks>The <see cref="P:SharpHook.Reactive.Logging.IReactiveLogSource.MessageLogged" /> observable doesn't emit any values in a disposed log source.</remarks>
+        </member>
+        <member name="T:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter">
+            <summary>
+            Adapts an <see cref="T:SharpHook.Logging.ILogSource" /> to the <see cref="T:SharpHook.Reactive.Logging.IReactiveLogSource" /> interface.
+            </summary>
+            <seealso cref="T:SharpHook.Logging.ILogSource" />
+            <seealso cref="T:SharpHook.Reactive.Logging.IReactiveLogSource" />
+        </member>
+        <member name="M:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter.#ctor(SharpHook.Logging.ILogSource)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter" /> class.
+            </summary>
+            <param name="logSource">The log source to adapt.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="logSource" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter.#ctor(SharpHook.Logging.ILogSource,System.Reactive.Concurrency.IScheduler)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter" /> class.
+            </summary>
+            <param name="logSource">The log source to adapt.</param>
+            <param name="defaultScheduler">The default shceduler for the observable.</param>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="logSource" /> or <paramref name="defaultScheduler" /> is <see langword="null" />.
+            </exception>
+        </member>
+        <member name="M:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter.Finalize">
+            <summary>
+            Completes the <see cref="P:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter.MessageLogged" /> observable if the log source hasn't been disposed.
+            </summary>
+        </member>
+        <member name="P:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter.MessageLogged">
+            <summary>
+            An observable which is emitted when libuiohook logs a message.
+            </summary>
+        </member>
+        <member name="P:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter.IsDisposed">
+            <summary>
+            Gets the value which indicates whether the log source is disposed.
+            </summary>
+            <value><see langword="true" /> if the log source is disposed. Otherwise, <see langword="false" />.</value>
+            <remarks>The <see cref="P:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter.MessageLogged" /> observable doesn't emit any values in a disposed log source.</remarks>
+        </member>
+        <member name="M:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter.Dispose">
+            <summary>
+            Disposes the adapted log source and emits the completion signal for <see cref="P:SharpHook.Reactive.Logging.ReactiveLogSourceAdapter.MessageLogged" />.
+            </summary>
+        </member>
+        <member name="T:SharpHook.Reactive.ReactiveGlobalHookAdapter">
+            <summary>
+            Adapts an <see cref="T:SharpHook.IGlobalHook" /> to the <see cref="T:SharpHook.Reactive.IReactiveGlobalHook" /> interface.
+            </summary>
+            <seealso cref="T:SharpHook.IGlobalHook" />
+            <seealso cref="T:SharpHook.Reactive.IReactiveGlobalHook" />
+        </member>
+        <member name="M:SharpHook.Reactive.ReactiveGlobalHookAdapter.#ctor(SharpHook.IGlobalHook)">
+            <summary>
+            Initializes a new instance of <see cref="T:SharpHook.Reactive.ReactiveGlobalHookAdapter" />.
+            </summary>
+            <param name="hook">The hook to adapt.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="hook" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:SharpHook.Reactive.ReactiveGlobalHookAdapter.#ctor(SharpHook.IGlobalHook,System.Reactive.Concurrency.IScheduler)">
+            <summary>
+            Initializes a new instance of <see cref="T:SharpHook.Reactive.ReactiveGlobalHookAdapter" />.
+            </summary>
+            <param name="hook">The hook to adapt.</param>
+            <param name="defaultScheduler">The default scheduler for observables.</param>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.IsRunning">
+            <summary>
+            Gets the value which indicates whether the global hook is running.
+            </summary>
+            <value><see langword="true" /> if the global hook is running. Otherwise, <see langword="false" />.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.IsDisposed">
+            <summary>
+            Gets the value which indicates whether the global hook is disposed.
+            </summary>
+            <value><see langword="true" /> if the global hook is disposed. Otherwise, <see langword="false" />.</value>
+            <remarks>A disposed global hook cannot be started again.</remarks>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.HookEnabled">
+            <summary>
+            Gets an observable which emits a value when the global hook is enabled.
+            </summary>
+            <value>An observable which emits a value when the global hook is enabled.</value>
+            <remarks>
+            The observable emits a value when the <see cref="M:SharpHook.Reactive.ReactiveGlobalHookAdapter.Run" /> or <see cref="M:SharpHook.Reactive.ReactiveGlobalHookAdapter.RunAsync" /> method is called and
+            then immediately completes.
+            </remarks>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.HookDisabled">
+            <summary>
+            Gets an observable which emits a value when the global hook is disabled.
+            </summary>
+            <value>An observable which emits a value when the global hook is disabled.</value>
+            <remarks>
+            The observable emits a value when the <see cref="M:System.IDisposable.Dispose" /> method is called and then
+            immediately completes.
+            </remarks>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.KeyTyped">
+            <summary>
+            Gets an observable which emits a value when a key is typed.
+            </summary>
+            <value>An observable which emits a value when a key is typed.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.KeyPressed">
+            <summary>
+            Gets an observable which emits a value when a key is pressed.
+            </summary>
+            <value>An observable which emits a value when a key is pressed.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.KeyReleased">
+            <summary>
+            Gets an observable which emits a value when a key is released.
+            </summary>
+            <value>An observable which emits a value when a key is released.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.MouseClicked">
+            <summary>
+            Gets an observable which emits a value when a mouse button is clicked.
+            </summary>
+            <value>An observable which emits a value when a mouse button is clicked.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.MousePressed">
+            <summary>
+            Gets an observable which emits a value when a mouse button is pressed.
+            </summary>
+            <value>An observable which emits a value when a mouse button is pressed.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.MouseReleased">
+            <summary>
+            Gets an observable which emits a value when a mouse button is released.
+            </summary>
+            <value>An observable which emits a value when a mouse button is released.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.MouseMoved">
+            <summary>
+            Gets an observable which emits a value when the mouse cursor is moved.
+            </summary>
+            <value>An observable which emits a value when the mouse cursor is moved.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.MouseDragged">
+            <summary>
+            Gets an observable which emits a value when the mouse cursor is dragged.
+            </summary>
+            <value>An observable which emits a value when the mouse cursor is dragged.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.ReactiveGlobalHookAdapter.MouseWheel">
+            <summary>
+            Gets an observable which emits a value when the mouse wheel is scrolled.
+            </summary>
+            <value>An observable which emits a value when the mouse wheel is scrolled.</value>
+        </member>
+        <member name="M:SharpHook.Reactive.ReactiveGlobalHookAdapter.Run">
+            <summary>
+            Runs the global hook on the current thread, blocking it. The hook can be destroyed by calling the
+            <see cref="M:System.IDisposable.Dispose" /> method.
+            </summary>
+            <exception cref="T:SharpHook.HookException">Starting the global hook has failed.</exception>
+            <exception cref="T:System.InvalidOperationException">The global hook is already running.</exception>
+            <exception cref="T:System.ObjectDisposedException">The global hook has been disposed.</exception>
+        </member>
+        <member name="M:SharpHook.Reactive.ReactiveGlobalHookAdapter.RunAsync">
+            <summary>
+            Runs the global hook without blocking the current thread. The hook can be destroyed by calling the
+            <see cref="M:System.IDisposable.Dispose" /> method.
+            </summary>
+            <returns>An observable which is completed when the hook is destroyed.</returns>
+            <exception cref="T:SharpHook.HookException">Starting the global hook has failed.</exception>
+            <exception cref="T:System.InvalidOperationException">The global hook is already running.</exception>
+            <exception cref="T:System.ObjectDisposedException">The global hook has been disposed.</exception>
+            <remarks>
+            The hook is started on a separate thread. The returned observable is hot. It emits a single value and then
+            immediately completes when the hook is destroyed.
+            </remarks>
+        </member>
+        <member name="M:SharpHook.Reactive.ReactiveGlobalHookAdapter.Dispose">
+            <summary>
+            Destroys the global hook.
+            </summary>
+            <remarks>
+            After calling this method, the hook cannot be started again. If you want to do that, create a new instance
+            of <see cref="T:SharpHook.IGlobalHook" />.
+            </remarks>
+        </member>
+        <member name="T:SharpHook.Reactive.SimpleReactiveGlobalHook">
+            <summary>
+            Represents a simple reactive global hook.
+            </summary>
+            <seealso cref="T:SharpHook.Reactive.IReactiveGlobalHook" />
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.#ctor">
+            <summary>
+            Initializes a new instance of <see cref="T:SharpHook.Reactive.SimpleReactiveGlobalHook" />.
+            </summary>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.#ctor(System.Reactive.Concurrency.IScheduler)">
+            <summary>
+            Initializes a new instance of <see cref="T:SharpHook.Reactive.SimpleReactiveGlobalHook" />.
+            </summary>
+            <param name="defaultScheduler">The default scheduler for observables.</param>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.#ctor(SharpHook.Providers.IGlobalHookProvider)">
+            <summary>
+            Initializes a new instance of <see cref="T:SharpHook.Reactive.SimpleReactiveGlobalHook" />.
+            </summary>
+            <param name="globalHookProvider">The underlying global hook provider.</param>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new instance of <see cref="T:SharpHook.Reactive.SimpleReactiveGlobalHook" />.
+            </summary>
+            <param name="runAsyncOnBackgroundThread">
+            <see langword="true" /> if <see cref="M:SharpHook.IGlobalHook.RunAsync" /> should run the hook on a background thread.
+            Otherwise, <see langword="false" />.
+            </param>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.#ctor(System.Reactive.Concurrency.IScheduler,SharpHook.Providers.IGlobalHookProvider)">
+            <summary>
+            Initializes a new instance of <see cref="T:SharpHook.Reactive.SimpleReactiveGlobalHook" />.
+            </summary>
+            <param name="defaultScheduler">The default scheduler for observables.</param>
+            <param name="globalHookProvider">
+            The underlying global hook provider, or <see langword="null" /> to use the default one.
+            </param>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.#ctor(System.Reactive.Concurrency.IScheduler,System.Boolean)">
+            <summary>
+            Initializes a new instance of <see cref="T:SharpHook.Reactive.SimpleReactiveGlobalHook" />.
+            </summary>
+            <param name="defaultScheduler">The default scheduler for observables.</param>
+            <param name="runAsyncOnBackgroundThread">
+            <see langword="true" /> if <see cref="M:SharpHook.IGlobalHook.RunAsync" /> should run the hook on a background thread.
+            Otherwise, <see langword="false" />.
+            </param>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.#ctor(SharpHook.Providers.IGlobalHookProvider,System.Boolean)">
+            <summary>
+            Initializes a new instance of <see cref="T:SharpHook.Reactive.SimpleReactiveGlobalHook" />.
+            </summary>
+            <param name="globalHookProvider">
+            The underlying global hook provider, or <see langword="null" /> to use the default one.
+            </param>
+            <param name="runAsyncOnBackgroundThread">
+            <see langword="true" /> if <see cref="M:SharpHook.IGlobalHook.RunAsync" /> should run the hook on a background thread.
+            Otherwise, <see langword="false" />.
+            </param>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.#ctor(System.Reactive.Concurrency.IScheduler,SharpHook.Providers.IGlobalHookProvider,System.Boolean)">
+            <summary>
+            Initializes a new instance of <see cref="T:SharpHook.Reactive.SimpleReactiveGlobalHook" />.
+            </summary>
+            <param name="defaultScheduler">The default scheduler for observables.</param>
+            <param name="globalHookProvider">
+            The underlying global hook provider, or <see langword="null" /> to use the default one.
+            </param>
+            <param name="runAsyncOnBackgroundThread">
+            <see langword="true" /> if <see cref="M:SharpHook.IGlobalHook.RunAsync" /> should run the hook on a background thread.
+            Otherwise, <see langword="false" />.
+            </param>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.#ctor(SharpHook.GlobalHookType,System.Reactive.Concurrency.IScheduler,SharpHook.Providers.IGlobalHookProvider,System.Boolean)">
+            <summary>
+            Initializes a new instance of <see cref="T:SharpHook.Reactive.SimpleReactiveGlobalHook" />.
+            </summary>
+            <param name="globalHookType">The global hook type.</param>
+            <param name="defaultScheduler">
+            The default scheduler for observables, or <see langword="null" /> to use the default one.
+            </param>
+            <param name="globalHookProvider">
+            The underlying global hook provider, or <see langword="null" /> to use the default one.
+            </param>
+            <param name="runAsyncOnBackgroundThread">
+            <see langword="true" /> if <see cref="M:SharpHook.IGlobalHook.RunAsync" /> should run the hook on a background thread.
+            Otherwise, <see langword="false" />.
+            </param>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.Finalize">
+            <summary>
+            Destroys the global hook if it's running.
+            </summary>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.IsRunning">
+            <summary>
+            Gets the value which indicates whether the global hook is running.
+            </summary>
+            <value><see langword="true" /> if the global hook is running. Otherwise, <see langword="false" />.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.IsDisposed">
+            <summary>
+            Gets the value which indicates whether the global hook is disposed.
+            </summary>
+            <value><see langword="true" /> if the global hook is disposed. Otherwise, <see langword="false" />.</value>
+            <remarks>A disposed global hook cannot be started again.</remarks>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.HookEnabled">
+            <summary>
+            Gets an observable which emits a value when the global hook is enabled.
+            </summary>
+            <value>An observable which emits a value when the global hook is enabled.</value>
+            <remarks>
+            The observable emits a value when the <see cref="M:SharpHook.Reactive.SimpleReactiveGlobalHook.Run" /> or <see cref="M:SharpHook.Reactive.SimpleReactiveGlobalHook.RunAsync" /> method is called and
+            then immediately completes.
+            </remarks>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.HookDisabled">
+            <summary>
+            Gets an observable which emits a value when the global hook is disabled.
+            </summary>
+            <value>An observable which emits a value when the global hook is disabled.</value>
+            <remarks>
+            The observable emits a value when the <see cref="M:System.IDisposable.Dispose" /> method is called and then
+            immediately completes.
+            </remarks>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.KeyTyped">
+            <summary>
+            Gets an observable which emits a value when a key is typed.
+            </summary>
+            <value>An observable which emits a value when a key is typed.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.KeyPressed">
+            <summary>
+            Gets an observable which emits a value when a key is pressed.
+            </summary>
+            <value>An observable which emits a value when a key is pressed.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.KeyReleased">
+            <summary>
+            Gets an observable which emits a value when a key is released.
+            </summary>
+            <value>An observable which emits a value when a key is released.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.MouseClicked">
+            <summary>
+            Gets an observable which emits a value when a mouse button is clicked.
+            </summary>
+            <value>An observable which emits a value when a mouse button is clicked.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.MousePressed">
+            <summary>
+            Gets an observable which emits a value when a mouse button is pressed.
+            </summary>
+            <value>An observable which emits a value when a mouse button is pressed.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.MouseReleased">
+            <summary>
+            Gets an observable which emits a value when a mouse button is released.
+            </summary>
+            <value>An observable which emits a value when a mouse button is released.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.MouseMoved">
+            <summary>
+            Gets an observable which emits a value when the mouse cursor is moved.
+            </summary>
+            <value>An observable which emits a value when the mouse cursor is moved.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.MouseDragged">
+            <summary>
+            Gets an observable which emits a value when the mouse cursor is dragged.
+            </summary>
+            <value>An observable which emits a value when the mouse cursor is dragged.</value>
+        </member>
+        <member name="P:SharpHook.Reactive.SimpleReactiveGlobalHook.MouseWheel">
+            <summary>
+            Gets an observable which emits a value when the mouse wheel is scrolled.
+            </summary>
+            <value>An observable which emits a value when the mouse wheel is scrolled.</value>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.Run">
+            <summary>
+            Runs the global hook on the current thread, blocking it. The hook can be destroyed by calling the
+            <see cref="M:System.IDisposable.Dispose" /> method.
+            </summary>
+            <exception cref="T:SharpHook.HookException">Starting the global hook has failed.</exception>
+            <exception cref="T:System.InvalidOperationException">The global hook is already running.</exception>
+            <exception cref="T:System.ObjectDisposedException">The global hook has been disposed.</exception>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.RunAsync">
+            <summary>
+            Runs the global hook without blocking the current thread. The hook can be destroyed by calling the
+            <see cref="M:System.IDisposable.Dispose" /> method.
+            </summary>
+            <returns>An observable which is completed when the hook is destroyed.</returns>
+            <exception cref="T:SharpHook.HookException">Starting the global hook has failed.</exception>
+            <exception cref="T:System.InvalidOperationException">The global hook is already running.</exception>
+            <exception cref="T:System.ObjectDisposedException">The global hook has been disposed.</exception>
+            <remarks>
+            The hook is started on a separate thread. The returned observable is hot. It emits a single value and then
+            immediately completes when the hook is destroyed.
+            </remarks>
+        </member>
+        <member name="M:SharpHook.Reactive.SimpleReactiveGlobalHook.Dispose">
+            <summary>
+            Destroys the global hook.
+            </summary>
+            <exception cref="T:SharpHook.HookException">Stopping the hook has failed.</exception>
+            <remarks>
+            After calling this method, the hook cannot be started again. If you want to do that, create a new instance
+            of <see cref="T:SharpHook.Reactive.IReactiveGlobalHook" />.
+            </remarks>
+        </member>
+    </members>
+</doc>
