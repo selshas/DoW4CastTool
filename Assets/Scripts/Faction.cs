@@ -1,4 +1,4 @@
-public enum eFaction : int
+public enum Faction : int
 {
     None = -1,
 

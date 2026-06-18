@@ -22,13 +22,13 @@ public static class MapDataLoader
 {
     public static List<MapData> Maps { get; private set; } = new List<MapData>();
 
-    private static readonly Dictionary<string, eMatchMode> MatchModeTagLookup = new Dictionary<string, eMatchMode>()
+    private static readonly Dictionary<string, MatchMode> MatchModeTagLookup = new Dictionary<string, MatchMode>()
     {
-        { "1v1",        eMatchMode.OneOnOne },
-        { "2v2",        eMatchMode.TwoOnTwo },
-        { "3v3",        eMatchMode.ThreeOnThree },
-        { "freeforall", eMatchMode.FreeForAll },
-        { "ffa",        eMatchMode.FreeForAll },
+        { "1v1",        MatchMode.OneOnOne },
+        { "2v2",        MatchMode.TwoOnTwo },
+        { "3v3",        MatchMode.ThreeOnThree },
+        { "freeforall", MatchMode.FreeForAll },
+        { "ffa",        MatchMode.FreeForAll },
     };
 
     public static void Load()
@@ -50,7 +50,7 @@ public static class MapDataLoader
         }
     }
 
-    public static List<MapData> GetByMatchMode(eMatchMode mode)
+    public static List<MapData> GetByMatchMode(MatchMode mode)
     {
         var result = new List<MapData>();
         foreach (var map in Maps)
@@ -76,7 +76,7 @@ public static class MapDataLoader
 
         tex.name = mapName;
 
-        var matchMode = eMatchMode.None;
+        var matchMode = MatchMode.None;
         var matchModePath = Path.Combine(dirPath, "matchmode.txt");
         if (File.Exists(matchModePath))
         {

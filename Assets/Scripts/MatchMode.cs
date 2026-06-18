@@ -1,5 +1,5 @@
 [System.Flags]
-public enum eMatchMode : int
+public enum MatchMode : int
 {
     None        = 0,
 

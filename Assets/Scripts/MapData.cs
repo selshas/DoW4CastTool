@@ -4,5 +4,5 @@ public class MapData
 {
     public string Name;
     public Texture2D MinimapTexture;
-    public eMatchMode MatchMode;
+    public MatchMode MatchMode;
 }
