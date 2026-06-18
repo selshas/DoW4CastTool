@@ -198,10 +198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b72d6798190043247b8c3cc117ec1619, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MiniPortraitSprites:
-  - {fileID: 1938922085, guid: a04a1791b92969a48bfa013a53b98324, type: 3}
-  - {fileID: 179715222, guid: a04a1791b92969a48bfa013a53b98324, type: 3}
-  - {fileID: -1918488360, guid: a04a1791b92969a48bfa013a53b98324, type: 3}
+  MiniPortraitSprites: []
   MiniPortraits:
   - {fileID: 2046155412}
   - {fileID: 683601002}
