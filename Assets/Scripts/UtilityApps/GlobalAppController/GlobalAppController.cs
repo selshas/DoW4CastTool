@@ -10,7 +10,6 @@ public class GlobalAppController : UtilityAppBase
     public GlobalAppControllerHelper Helper;
 
     public ScreenCanvas App_ScreenCanvas;
-    public CardTable App_CardTable;
     public MinimapCanvas App_MinimapCanvas;
     public PlayersNamePanel App_PlayersNamePanel;
     public ScreenVeil App_ScreenVeil;
@@ -28,11 +27,6 @@ public class GlobalAppController : UtilityAppBase
         {
             App_MinimapCanvas.gameObject.SetActive(false);
         }
-    }
-    public void ToggleApp_CardTable()
-    {
-        var isActive = App_CardTable.gameObject.activeSelf;
-        App_CardTable.gameObject.SetActive(!isActive);
     }
     public void ToggleApp_MinimapCanvas()
     {
@@ -73,14 +67,6 @@ public class GlobalAppController : UtilityAppBase
     public override void InitializeInputs()
     {
         #region Toggle Apps
-        AddInputCmd(
-            DeviceType.Keyboard, (uint)KeyCode.VcF1,
-            InputState.Pressed,
-            (self) =>
-            {
-                ToggleApp_CardTable();
-            }
-        );
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcF2,
             InputState.Pressed,
