@@ -53,7 +53,7 @@ public class PlayersNamePanel : MonoBehaviour
     {
         MiniPortraitSprites.Clear();
 
-        var path = Path.Combine(Application.streamingAssetsPath, "FactionPortrait");
+        var path = Path.Combine(Application.streamingAssetsPath, "FactionPortraits");
         if (!Directory.Exists(path))
             return;
 
