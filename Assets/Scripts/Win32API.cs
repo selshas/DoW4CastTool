@@ -43,10 +43,16 @@ public static class Win32API
     public static extern uint DwmExtendFrameIntoClientArea(IntPtr hWnd, ref Margin margins);
 
     [DllImport("user32.dll")]
+    public static extern long GetWindowLongA(IntPtr hwnd, int index);
+
+    [DllImport("user32.dll")]
     public static extern uint SetWindowLongA(IntPtr hwnd, int index, long attr);
 
     [DllImport("user32.dll")]
     public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
+
+    [DllImport("user32.dll")]
+    public static extern bool GetCursorPos(out POINT lpPoint);
 
 
     [DllImport("user32.dll")]

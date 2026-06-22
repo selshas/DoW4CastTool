@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.InputSystem;
 
 public class ApplicationSetup : MonoBehaviour
 {
@@ -13,21 +12,24 @@ public class ApplicationSetup : MonoBehaviour
 
     public static bool InteractionMode
     {
-        get => _interactionMode; 
-        set 
+        get => _interactionMode;
+        set
         {
             _interactionMode = value;
 
-            if (!value) 
-                Win32API.SetWindowLongA(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT);
+            if (!value)
+                SetClickThrough(true);
         }
     }
     private static bool _interactionMode = true;
 
-    const int GWL_EXSTYLE = -20;
+    private const int GWL_EXSTYLE = -20;
 
-    const long WS_EX_LAYERED = 0x00080000;
-    const long WS_EX_TRANSPARENT = 0x00000020L;
+    private const long WS_EX_LAYERED = 0x00080000;
+    private const long WS_EX_TRANSPARENT = 0x00000020L;
+
+    private const uint SWP_NOMOVE = 0x0002;
+    private const uint SWP_NOSIZE = 0x0001;
 
     public static IntPtr hhook_kbinput = IntPtr.Zero;
     public static IntPtr hhook_mbinput = IntPtr.Zero;
@@ -40,13 +42,11 @@ public class ApplicationSetup : MonoBehaviour
 
     public List<UtilityAppBase> UtilityApps = new List<UtilityAppBase>();
 
-    // Start is called before the first frame update
     private void Awake()
     {
         Instance ??= this;
 
         proc = System.Diagnostics.Process.GetCurrentProcess();
-        //proc = Win32API.GetCurrentProcess();
 
         Application.runInBackground = true;
         Application.targetFrameRate = 60;
@@ -57,12 +57,25 @@ public class ApplicationSetup : MonoBehaviour
 
         hWnd = Win32API.GetActiveWindow();
 
-        Win32API.Margin margin = new Win32API.Margin { cx_left = -20 };
+        Win32API.Margin margin = new Win32API.Margin { cx_left = -1 };
         Win32API.DwmExtendFrameIntoClientArea(hWnd, ref margin);
-        
-        Win32API.SetWindowLongA(hWnd, GWL_EXSTYLE, WS_EX_LAYERED);
 
-        Win32API.SetWindowPos(hWnd, new IntPtr(-1), 0, 0, 0, 0, 0);
+        long style = Win32API.GetWindowLongA(hWnd, GWL_EXSTYLE);
+        Win32API.SetWindowLongA(hWnd, GWL_EXSTYLE, style | WS_EX_LAYERED);
+
+        Win32API.SetWindowPos(hWnd, new IntPtr(-1), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+#endif
+    }
+
+    private static void SetClickThrough(bool clickThrough)
+    {
+#if !UNITY_EDITOR
+        long style = Win32API.GetWindowLongA(hWnd, GWL_EXSTYLE);
+        if (clickThrough)
+            style |= WS_EX_TRANSPARENT;
+        else
+            style &= ~WS_EX_TRANSPARENT;
+        Win32API.SetWindowLongA(hWnd, GWL_EXSTYLE, style);
 #endif
     }
 
@@ -75,29 +88,29 @@ public class ApplicationSetup : MonoBehaviour
         Win32API.SetFocus(proc.MainWindowHandle);
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (!InteractionMode) 
+        if (!InteractionMode)
             return;
 
-        Cursor.lockState = (Application.isFocused) 
+        Cursor.lockState = (Application.isFocused)
             ? CursorLockMode.Confined
             : CursorLockMode.None;
 
+        Win32API.GetCursorPos(out Win32API.POINT cursorPos);
+
         PointerEventData ped = new PointerEventData(null);
-        ped.position = Mouse.current.position.ReadValue();
+        ped.position = new Vector2(cursorPos.x, Screen.height - cursorPos.y);
 
         raycaster.Raycast(ped, RaycastResults);
 
         if (RaycastResults.Count > 0 || RaycastDetected)
         {
-            // Bring window focus to the top
-            Win32API.SetWindowLongA(hWnd, GWL_EXSTYLE, WS_EX_LAYERED);
+            SetClickThrough(false);
         }
         else
         {
-            Win32API.SetWindowLongA(hWnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT);
+            SetClickThrough(true);
         }
         RaycastResults.Clear();
     }
