@@ -14,6 +14,7 @@ public class FactionDataLoader : MonoBehaviour
 {
     public static FactionDataLoader Instance { get; private set; }
 
+    public bool IsLoaded { get; private set; } = false;
     public Dictionary<string, FactionData> Factions { get; private set; } = new Dictionary<string, FactionData>();
 
     private void Awake()
@@ -27,6 +28,8 @@ public class FactionDataLoader : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         Load();
+
+        IsLoaded = true;
     }
 
     /// <summary> Returns the FactionData for the given name, or null if not found. </summary>

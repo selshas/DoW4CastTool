@@ -40,18 +40,23 @@ public class ApplicationSetup : MonoBehaviour
     private GraphicRaycaster raycaster;
     public static List<RaycastResult> RaycastResults = new List<RaycastResult>();
 
+    public bool IsLoaded { get; private set; } = false; 
     public List<UtilityAppBase> UtilityApps = new List<UtilityAppBase>();
 
     private void Awake()
     {
-        Instance ??= this;
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
 
         proc = System.Diagnostics.Process.GetCurrentProcess();
 
         Application.runInBackground = true;
         Application.targetFrameRate = 60;
-
-        raycaster = GetComponent<GraphicRaycaster>();
 
 #if !UNITY_EDITOR
 
@@ -65,6 +70,10 @@ public class ApplicationSetup : MonoBehaviour
 
         Win32API.SetWindowPos(hWnd, new IntPtr(-1), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 #endif
+
+        DontDestroyOnLoad(gameObject);
+        
+        IsLoaded = true;
     }
 
     private static void SetClickThrough(bool clickThrough)
@@ -93,6 +102,15 @@ public class ApplicationSetup : MonoBehaviour
         if (!InteractionMode)
             return;
 
+        if (raycaster == null)
+        {
+            var canvas = FindAnyObjectByType<Canvas>();
+            if (canvas == null)
+                return;
+
+            raycaster = canvas.GetComponent<GraphicRaycaster>();
+        }
+
         Cursor.lockState = (Application.isFocused)
             ? CursorLockMode.Confined
             : CursorLockMode.None;
@@ -101,6 +119,7 @@ public class ApplicationSetup : MonoBehaviour
 
         PointerEventData ped = new PointerEventData(null);
         ped.position = new Vector2(cursorPos.x, Screen.height - cursorPos.y);
+
 
         raycaster.Raycast(ped, RaycastResults);
 
@@ -113,5 +132,6 @@ public class ApplicationSetup : MonoBehaviour
             SetClickThrough(true);
         }
         RaycastResults.Clear();
+
     }
 }
