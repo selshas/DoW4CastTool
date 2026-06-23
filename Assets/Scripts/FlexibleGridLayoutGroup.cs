@@ -55,8 +55,8 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
     private bool IsRowPrior => (m_OrderPriority == OrderPriority.Row);
     private int MainAxis => (IsRowPrior) ? 0 : 1;
     private int CrossAxis => (IsRowPrior) ? 1 : 0;
-    private float MainSpacing => (IsRowPrior) ? m_ColumnSpacing : m_RowSpacing;
-    private float CrossSpacing => (IsRowPrior) ? m_RowSpacing : m_ColumnSpacing;
+    private float MainAxisSpacing => (IsRowPrior) ? m_ColumnSpacing : m_RowSpacing;
+    private float CrossAxisSpacing => (IsRowPrior) ? m_RowSpacing : m_ColumnSpacing;
 
 
     #region Layout Calculation
@@ -70,9 +70,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         var preferred = default(float);
 
         if (IsRowPrior)
-            CalcMainInput(0, out min, out preferred);
+            CalcMainAxisInput(0, out min, out preferred);
         else
-            CalcCrossInput(0, out min, out preferred);
+            CalcCrossAxisInput(0, out min, out preferred);
 
         SetLayoutInputForAxis(min + padding.horizontal, preferred + padding.horizontal, -1, 0);
     }
@@ -83,14 +83,14 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         var preferred = default(float);
 
         if (IsRowPrior)
-            CalcCrossInput(1, out min, out preferred);
+            CalcCrossAxisInput(1, out min, out preferred);
         else
-            CalcMainInput(1, out min, out preferred);
+            CalcMainAxisInput(1, out min, out preferred);
 
         SetLayoutInputForAxis(min + padding.vertical, preferred + padding.vertical, -1, 1);
     }
 
-    private void CalcMainInput(int axis, out float min, out float preferred)
+    private void CalcMainAxisInput(int axis, out float min, out float preferred)
     {
         min = 0;
         preferred = 0;
@@ -102,13 +102,13 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
             min = Mathf.Max(min, childSize);
 
             if (i > 0)
-                preferred += MainSpacing;
+                preferred += MainAxisSpacing;
 
             preferred += childSize;
         }
     }
 
-    private void CalcCrossInput(int axis, out float min, out float preferred)
+    private void CalcCrossAxisInput(int axis, out float min, out float preferred)
     {
         min = 0;
         preferred = 0;
@@ -120,7 +120,7 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
             min = Mathf.Max(min, crossAxialSize);
 
             if (g > 0)
-                preferred += CrossSpacing;
+                preferred += CrossAxisSpacing;
 
             preferred += crossAxialSize;
         }
@@ -130,28 +130,34 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
 
     #region Layout Apply
 
+    /// <summary>
+    /// Arrange items along horizontal axis
+    /// </summary>
     public override void SetLayoutHorizontal()
     {
         if (MainAxis == 0)
-            SetAlongMain(0);
+            SetAlongMainAxis(0);
         else
-            SetAlongCross(0);
+            SetAlongCrossAxis(0);
     }
 
+    /// <summary>
+    /// Arrange items along vertical axis
+    /// </summary>
     public override void SetLayoutVertical()
     {
         if (CrossAxis == 1)
-            SetAlongCross(1);
+            SetAlongCrossAxis(1);
         else
-            SetAlongMain(1);
+            SetAlongMainAxis(1);
     }
 
-    private void SetAlongMain(int axis)
+    private void SetAlongMainAxis(int axis)
     {
         var isControlled = (axis == 0) ? m_ChildControlWidth : m_ChildControlHeight;
         var isForceExpanded = (axis == 0) ? m_ChildForceExpandWidth : m_ChildForceExpandHeight;
 
-        var spacing = MainSpacing;
+        var spacing = MainAxisSpacing;
         var availableSpace = (rectTransform.rect.size[axis] - GetPaddingTotal(axis));
         var paddingStart = GetPaddingStart(axis);
 
@@ -172,8 +178,8 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
             }
 
             var totalSpacing = spacing * (itemCount - 1);
-            var remainingSpace = availableSpace - totalPreferredSize - totalSpacing;
-            var shouldDistribute = (isControlled) && (remainingSpace > 0) && ((isForceExpanded) || (totalFlexibleSize > 0));
+            var remainingSpace = (availableSpace - (totalPreferredSize + totalSpacing));
+            var shouldDistribute = (isControlled) && (remainingSpace > 0.001f) && ((isForceExpanded) || (totalFlexibleSize > 0));
 
             var position = (shouldDistribute)
                 ? paddingStart
@@ -204,12 +210,12 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         }
     }
 
-    private void SetAlongCross(int axis)
+    private void SetAlongCrossAxis(int axis)
     {
         var isControlled = (axis == 0) ? m_ChildControlWidth : m_ChildControlHeight;
         var isForceExpanded = (axis == 0) ? m_ChildForceExpandWidth : m_ChildForceExpandHeight;
 
-        var spacing = CrossSpacing;
+        var spacing = CrossAxisSpacing;
         var paddingStart = GetPaddingStart(axis);
 
         var totalCrossAxialSize = 0f;
@@ -222,11 +228,20 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         }
 
         var availableSpace = (rectTransform.rect.size[axis] - GetPaddingTotal(axis));
-        var position = paddingStart + Mathf.Max(0, availableSpace - totalCrossAxialSize) * AlignmentOnAxis(axis);
+        var remainingSpace = (availableSpace - totalCrossAxialSize);
+        // Epsilon guards against float drift from SetChildAlongAxis write-read round-trip.
+        var shouldDistribute = (isControlled) && (isForceExpanded) && (remainingSpace > 0.001f);
+
+        var position = (shouldDistribute)
+            ? paddingStart
+            : paddingStart + Mathf.Max(0, remainingSpace) * AlignmentOnAxis(axis);
 
         for (var g = 0; g < groups.Count; g++)
         {
             var groupCrossAxialSize = groups[g].CrossAxialSize;
+
+            if (shouldDistribute)
+                groupCrossAxialSize += remainingSpace / groups.Count;
 
             for (var i = groups[g].StartIndex; i < groups[g].LastIndex; i++)
             {
@@ -265,7 +280,7 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         var mainAxis = MainAxis;
         var crossAxis = CrossAxis;
 
-        var spacing = MainSpacing;
+        var spacing = MainAxisSpacing;
         var availableSpace = (rectTransform.rect.size[mainAxis] - GetPaddingTotal(mainAxis));
 
         var groupStartIndex = 0;
@@ -285,10 +300,13 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
                 ? childSizeInMainAxis
                 : (filled + spacing + childSizeInMainAxis);
 
-            var overflowed = (!isFirstItemInGroup) && (requiredSpace > availableSpace);
-            var gridFilled = (m_GridSize > 0) && (!isFirstItemInGroup) && ((i - groupStartIndex) >= m_GridSize);
+            requiredSpace -= availableSpace;
 
-            if ((overflowed) || (gridFilled))
+            // Epsilon guards against float drift from SetChildAlongAxis write-read round-trip.
+            var overflowed = (!isFirstItemInGroup) && (requiredSpace > 0.001f);
+            var groupFilled = (m_GridSize > 0) && (!isFirstItemInGroup) && ((i - groupStartIndex) >= m_GridSize);
+
+            if (overflowed || groupFilled)
             {
                 groups.Add(new GroupData
                 {
@@ -308,6 +326,7 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
             }
         }
 
+        // The Last group
         groups.Add(new GroupData
         {
             StartIndex = groupStartIndex,
