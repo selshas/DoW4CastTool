@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using System.IO;
 
 public class PlayersNamePanel : MonoBehaviour
 {
@@ -49,28 +48,15 @@ public class PlayersNamePanel : MonoBehaviour
         }
     }
 
+    /// <summary> Populates emblem sprites from FactionDataLoader. </summary>
     private void LoadPortraitSprites()
     {
         MiniPortraitSprites.Clear();
 
-        var path = Path.Combine(Application.streamingAssetsPath, "FactionPortraits");
-        if (!Directory.Exists(path))
-            return;
-
-        var files = Directory.GetFiles(path, "*.png");
-        System.Array.Sort(files);
-
-        foreach (var file in files)
+        foreach (var factionData in FactionDataLoader.Instance.Factions.Values)
         {
-            var bytes = File.ReadAllBytes(file);
-            var tex = new Texture2D(2, 2);
-            if (!tex.LoadImage(bytes))
-                continue;
-
-            tex.name = Path.GetFileNameWithoutExtension(file);
-            var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-            sprite.name = tex.name;
-            MiniPortraitSprites.Add(sprite);
+            if (factionData.Emblem != null)
+                MiniPortraitSprites.Add(factionData.Emblem);
         }
     }
 }
