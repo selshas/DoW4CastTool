@@ -108,3 +108,6 @@ InitTestScene*.unity*
 # Claude
 /CLAUDE.md
 /[Cc]laude.md
+
+# Builds
+/Build_*
