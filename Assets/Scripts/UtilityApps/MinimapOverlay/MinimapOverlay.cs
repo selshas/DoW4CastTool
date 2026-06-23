@@ -9,21 +9,21 @@ public class MinimapOverlay : UtilityAppBase
     public MinimapCanvas MinimapCanvas;
     public RawImage RawImg_MinimapOverlay;
 
+    private bool mirrored = false;
+
     public override void InitializeInputs()
     {
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     protected override void Update()
     {
         base.Update();
 
-        if (MinimapCanvas.RawImg_TargetCanvas == null)
-            return;
-
-        if (RawImg_MinimapOverlay.texture == MinimapCanvas.RawImg_TargetCanvas.texture)
-            return;
-
-        RawImg_MinimapOverlay.texture = MinimapCanvas.RawImg_TargetCanvas.texture;
+        if (!mirrored && MinimapCanvas.Canvas != null)
+        {
+            MinimapCanvas.Canvas.CreateMirror(RawImg_MinimapOverlay.rectTransform);
+            RawImg_MinimapOverlay.enabled = false;
+            mirrored = true;
+        }
     }
 }

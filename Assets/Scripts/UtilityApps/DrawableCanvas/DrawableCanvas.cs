@@ -2,9 +2,8 @@ using SharpHook.Native;
 
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
+
 using UnityEngine.UI;
-using UnityEngine.Experimental.Rendering;
 
 using static GlobalInputSystem;
 using DeviceType = GlobalInputSystem.DeviceType;
@@ -24,10 +23,14 @@ public abstract partial class DrawableCanvas : UtilityAppBase
     protected Transform transform_emulatedCursor;
     public RawImage RawImage_EmulatedCursor;
 
-    protected RenderTexture renderTex_canvasTexture;
+    public ChunkedCanvas Canvas => chunkedCanvas;
+    protected ChunkedCanvas chunkedCanvas;
 
     public Material Mat_DrawSpot;
     public Material Mat_EraseSpot;
+
+    private const float DRAW_RADIUS = 4f;
+    private const float ERASE_RADIUS = 32f;
 
     public Dictionary<string, Color> PenColors = new Dictionary<string, Color>()
     {
@@ -61,21 +64,16 @@ public abstract partial class DrawableCanvas : UtilityAppBase
 
         transform_emulatedCursor = RawImage_EmulatedCursor.transform;
 
-        var renderTexture = new RenderTexture(Screen.width, Screen.height, 1, GraphicsFormat.R8G8B8A8_UNorm, 0);
-        renderTex_canvasTexture = renderTexture;
-
         rectTransform_targetCanvas = Transform_TargetCanvas.GetComponent<RectTransform>();
         RawImg_TargetCanvas ??= Transform_TargetCanvas.GetComponent<RawImage>();
-        RawImg_TargetCanvas.texture = renderTex_canvasTexture;
     }
 
     protected override void Start()
     {
         base.Start();
 
-        cursorPos_prev = cursorPos_curr = Pointer.current.position.ReadValue();
-
-        Clear();
+        Win32API.GetCursorPos(out Win32API.POINT initCursorPoint);
+        cursorPos_prev = cursorPos_curr = new Vector2(initCursorPoint.x, Screen.height - initCursorPoint.y);
 
         Mat_DrawSpot.SetVector("_Color", CurrentPenColor);
 
@@ -95,16 +93,11 @@ public abstract partial class DrawableCanvas : UtilityAppBase
         xMax = corners_screen[2].x;
         yMax = corners_screen[2].y;
 
-        var cavasSize_width = Mathf.RoundToInt(xMax - xMin);
-        var cavasSize_height = Mathf.RoundToInt(yMax - yMin);
+        var canvasWidth = Mathf.RoundToInt(xMax - xMin);
+        var canvasHeight = Mathf.RoundToInt(yMax - yMin);
 
-        var renderTexture = new RenderTexture(cavasSize_width, cavasSize_height, 1, GraphicsFormat.R8G8B8A8_UNorm, 0);
-        renderTex_canvasTexture = renderTexture;
-        RawImg_TargetCanvas.texture = renderTex_canvasTexture;
-
-        RenderTexture.active = (RenderTexture)RawImg_TargetCanvas.texture;
-        GL.Clear(true, true, new Color(0, 0, 0, 0));
-        RenderTexture.active = null;
+        chunkedCanvas = new ChunkedCanvas(canvasWidth, canvasHeight, rectTransform_targetCanvas);
+        RawImg_TargetCanvas.enabled = false;
     }
 
     protected bool IsCursorInsideCanvas()
@@ -117,42 +110,43 @@ public abstract partial class DrawableCanvas : UtilityAppBase
         );
     }
 
-    // Update is called once per frame
     protected override void Update()
     {
         base.Update();
 
         cursorPos_prev = cursorPos_curr;
-        cursorPos_curr = Pointer.current.position.ReadValue();
+
+        Win32API.GetCursorPos(out Win32API.POINT cursorPoint);
+        cursorPos_curr = new Vector2(cursorPoint.x, Screen.height - cursorPoint.y);
         transform_emulatedCursor.position = cursorPos_curr;
 
         transform_emulatedCursor.gameObject.SetActive(IsCursorInsideCanvas());
     }
 
+    protected virtual void OnDestroy()
+    {
+        chunkedCanvas?.Release();
+    }
+
     public void Clear()
     {
-        RenderTexture.active = renderTex_canvasTexture;
-        GL.Clear(true, true, new Color(0, 0, 0, 0));
-        RenderTexture.active = null;
+        chunkedCanvas?.Clear();
     }
 
     public void DrawSpot(Vector2 pos)
     {
         pos -= new Vector2(xMin, yMin);
 
-        Mat_DrawSpot.SetVector("_CursorPos", pos);
         Mat_DrawSpot.SetVector("_Color", CurrentPenColor);
 
-        Graphics.Blit(null, renderTex_canvasTexture, Mat_DrawSpot);
+        chunkedCanvas.BlitSpot(pos, DRAW_RADIUS, Mat_DrawSpot);
     }
 
     public void EraseSpot(Vector2 pos)
     {
         pos -= new Vector2(xMin, yMin);
 
-        Mat_EraseSpot.SetVector("_CursorPos", pos);
-
-        Graphics.Blit(null, renderTex_canvasTexture, Mat_EraseSpot);
+        chunkedCanvas.BlitSpot(pos, ERASE_RADIUS, Mat_EraseSpot);
     }
 
     public override void InitializeInputs()
