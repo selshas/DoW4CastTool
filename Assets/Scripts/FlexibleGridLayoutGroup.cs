@@ -58,9 +58,11 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
     private float MainAxisSpacing => (IsRowPrior) ? m_ColumnSpacing : m_RowSpacing;
     private float CrossAxisSpacing => (IsRowPrior) ? m_RowSpacing : m_ColumnSpacing;
 
-
     #region Layout Calculation
 
+    /// <summary>
+    /// Calculate minimum and preferred width from child elements and grouping
+    /// </summary>
     public override void CalculateLayoutInputHorizontal()
     {
         base.CalculateLayoutInputHorizontal();
@@ -77,6 +79,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         SetLayoutInputForAxis(min + padding.horizontal, preferred + padding.horizontal, -1, 0);
     }
 
+    /// <summary>
+    /// Calculate minimum and preferred height from child elements and grouping
+    /// </summary>
     public override void CalculateLayoutInputVertical()
     {
         var min = default(float);
@@ -90,6 +95,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         SetLayoutInputForAxis(min + padding.vertical, preferred + padding.vertical, -1, 1);
     }
 
+    /// <summary>
+    /// Accumulate child sizes along the main axis to determine min and preferred input
+    /// </summary>
     private void CalcMainAxisInput(int axis, out float min, out float preferred)
     {
         min = 0;
@@ -108,6 +116,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         }
     }
 
+    /// <summary>
+    /// Accumulate group sizes along the cross axis to determine min and preferred input
+    /// </summary>
     private void CalcCrossAxisInput(int axis, out float min, out float preferred)
     {
         min = 0;
@@ -152,6 +163,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
             SetAlongMainAxis(1);
     }
 
+    /// <summary>
+    /// Arrange items along current main axis
+    /// </summary>
     private void SetAlongMainAxis(int axis)
     {
         var isControlled = (axis == 0) ? m_ChildControlWidth : m_ChildControlHeight;
@@ -210,6 +224,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         }
     }
 
+    /// <summary>
+    /// Arrange items along current cross axis
+    /// </summary>
     private void SetAlongCrossAxis(int axis)
     {
         var isControlled = (axis == 0) ? m_ChildControlWidth : m_ChildControlHeight;
@@ -270,6 +287,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
 
     #region Grouping
 
+    /// <summary>
+    /// Partition child elements into groups based on available main-axis space and grid size
+    /// </summary>
     private void CalculateGroups()
     {
         groups.Clear();
@@ -339,6 +359,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
 
     #region Helpers
 
+    /// <summary>
+    /// Return the actual child index, accounting for reverse arrangement
+    /// </summary>
     private int OrderedIndex(int i)
     {
         if (m_ReverseArrangement)
@@ -347,6 +370,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         return i;
     }
 
+    /// <summary>
+    /// Return the 0..1 alignment factor for the given axis from childAlignment
+    /// </summary>
     private float AlignmentOnAxis(int axis)
     {
         if (axis == 0)
@@ -355,6 +381,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         return ((int)childAlignment / 3) * 0.5f;
     }
 
+    /// <summary>
+    /// Return the padding offset at the start of the given axis
+    /// </summary>
     private float GetPaddingStart(int axis)
     {
         if (axis == 0)
@@ -363,6 +392,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         return padding.top;
     }
 
+    /// <summary>
+    /// Return the total padding on both sides of the given axis
+    /// </summary>
     private float GetPaddingTotal(int axis)
     {
         if (axis == 0)
@@ -371,6 +403,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         return padding.vertical;
     }
 
+    /// <summary>
+    /// Return the effective child size on the given axis, respecting control and scale settings
+    /// </summary>
     private float GetChildSize(RectTransform child, int axis)
     {
         var isControlled = (axis == 0) ? m_ChildControlWidth : m_ChildControlHeight;
@@ -389,6 +424,9 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
     #endregion
 
 #if UNITY_EDITOR
+    /// <summary>
+    /// Re-validate serialized properties in the editor
+    /// </summary>
     protected override void OnValidate()
     {
         base.OnValidate();
