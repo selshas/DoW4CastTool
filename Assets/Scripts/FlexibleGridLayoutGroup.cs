@@ -316,14 +316,12 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
             var childSizeInCrossAxis = GetChildSize(child, crossAxis);
 
             var isFirstItemInGroup = (i == groupStartIndex);
-            var requiredSpace = (isFirstItemInGroup)
+            var projectedFill = (isFirstItemInGroup)
                 ? childSizeInMainAxis
                 : (filled + spacing + childSizeInMainAxis);
 
-            requiredSpace -= availableSpace;
-
             // Epsilon guards against float drift from SetChildAlongAxis write-read round-trip.
-            var overflowed = (!isFirstItemInGroup) && (requiredSpace > 0.001f);
+            var overflowed = (!isFirstItemInGroup) && ((projectedFill - availableSpace) > 0.001f);
             var groupFilled = (m_GridSize > 0) && (!isFirstItemInGroup) && ((i - groupStartIndex) >= m_GridSize);
 
             if (overflowed || groupFilled)
@@ -341,7 +339,7 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
             }
             else
             {
-                filled = requiredSpace;
+                filled = projectedFill;
                 maxCrossAxialSize = Mathf.Max(maxCrossAxialSize, childSizeInCrossAxis);
             }
         }
