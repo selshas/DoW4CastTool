@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 // Loads faction data from StreamingAssets/Factions/.
@@ -76,9 +77,9 @@ public class FactionDataLoader : MonoBehaviour
     }
 
     /// <summary> Loads all hero data from a faction's Heroes subdirectory. </summary>
-    private static List<HeroData> LoadHeroes(string factionDirPath, string factionName)
+    private static Dictionary<string, HeroData> LoadHeroes(string factionDirPath, string factionName)
     {
-        var heroes = new List<HeroData>();
+        var heroes = new Dictionary<string, HeroData>();
 
         var heroesDir = Path.Combine(factionDirPath, "Heroes");
         if (!Directory.Exists(heroesDir))
@@ -94,7 +95,7 @@ public class FactionDataLoader : MonoBehaviour
             if (portrait == null)
                 continue;
 
-            heroes.Add(new HeroData
+            heroes.Add(heroName, new HeroData
             {
                 Name = heroName,
                 FactionName = factionName,
@@ -136,5 +137,32 @@ public class FactionDataLoader : MonoBehaviour
         }
 
         return null;
+    }
+
+    public string GetRandomFactionName()
+    {
+        var factionNames = Factions.Keys.ToArray();
+        var factionCount = Factions.Count;
+
+        return factionNames[Random.Range(0, factionCount)];
+    }
+
+    public string[] GetHeroNames(string factionName)
+    {
+        if (!Factions.TryGetValue(factionName, out var faction))
+            throw new System.Exception($"FactionName '{factionName}' does not exist");
+
+        return faction.Heroes.Keys.OrderBy(x => x).ToArray();
+    }
+
+    public string GetRandomHeroName(string factionName)
+    {
+        if (!Factions.TryGetValue(factionName, out var faction))
+            throw new System.Exception($"FactionName '{factionName}' does not exist");
+
+        var heroNames = faction.Heroes.Keys.ToArray();
+        var heroCount = faction.Heroes.Count;
+
+        return heroNames[Random.Range(0, heroCount)];
     }
 }

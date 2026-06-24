@@ -5,5 +5,5 @@ public class FactionData
 {
     public string Name;
     public Sprite Emblem;
-    public List<HeroData> Heroes;
+    public Dictionary<string, HeroData> Heroes;
 }
