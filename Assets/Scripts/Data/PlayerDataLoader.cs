@@ -56,6 +56,48 @@ public class PlayerDataLoader : SingletonBehaviour<PlayerDataLoader>
     }
 
     /// <summary>
+    /// Finds up to count candidate names matching the keyword. Prioritizes prefix matches via sorted range lookup, then fills remaining slots with substring matches. Reuses the provided list to avoid GC allocation. Returns the number of candidates found.
+    /// </summary>
+    public int FindCandidates(string keyword, int count, ref List<string> results)
+    {
+        if (results == null)
+            results = new List<string>(count);
+        else
+            results.Clear();
+
+        if (count <= 0 || string.IsNullOrEmpty(keyword))
+            return 0;
+
+        var upperBound = keyword + char.MaxValue;
+        var prefixRange = knownNames.GetViewBetween(keyword, upperBound);
+
+        foreach (var name in prefixRange)
+        {
+            if (results.Count >= count)
+                return count;
+
+            results.Add(name);
+        }
+
+        if (results.Count >= count)
+            return count;
+
+        foreach (var name in knownNames)
+        {
+            if (results.Count >= count)
+                break;
+
+            if (name.StartsWith(keyword, System.StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (name.IndexOf(keyword, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                results.Add(name);
+        }
+
+        return results.Count;
+    }
+
+    /// <summary>
     /// Writes the sorted name list to disk.
     /// </summary>
     private void Save()
