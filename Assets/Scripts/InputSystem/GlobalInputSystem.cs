@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 using SharpHook;
 using System.Linq;
@@ -17,11 +18,14 @@ public partial class GlobalInputSystem : MonoBehaviour
 
     private TaskPoolGlobalHook hooker;
 
+    /// <summary>
+    /// Initializes and starts the global input hook.
+    /// </summary>
     private async void Awake()
     {
         Instance ??= this;
 
-        hooker = new TaskPoolGlobalHook();
+        hooker = new TaskPoolGlobalHook(runAsyncOnBackgroundThread: false);
         hooker.MousePressed += Hook_MousePressed;
         hooker.MouseReleased += Hook_MouseReleased;
         hooker.KeyPressed += Hook_KeyboardPressed;
@@ -32,7 +36,10 @@ public partial class GlobalInputSystem : MonoBehaviour
         await hooker.RunAsync();
     }
 
-    void OnDestroy()
+    /// <summary>
+    /// Unsubscribes hook events and disposes the hook.
+    /// </summary>
+    private void OnDestroy()
     {
         hooker.MousePressed -= Hook_MousePressed;
         hooker.MouseReleased -= Hook_MouseReleased;
@@ -93,8 +100,62 @@ public partial class GlobalInputSystem : MonoBehaviour
             prevStates[code] = InputState.Idle;
     }
 
+    /// <summary>
+    /// Polls Unity's Input System for registered keys when the application is focused.
+    /// </summary>
+    private void PollFocusedInput()
+    {
+        if (!Application.isFocused)
+            return;
+
+        var keyboard = Keyboard.current;
+        if (keyboard != null && RegisteredInput.TryGetValue(DeviceType.Keyboard, out var kbInputs))
+        {
+            var kbStates = InputStates[DeviceType.Keyboard];
+            foreach (var code in kbInputs)
+            {
+                if (!sharpHookToInputSystemKey.TryGetValue(code, out var key))
+                    continue;
+
+                var keyControl = keyboard[key];
+                if (keyControl.wasPressedThisFrame)
+                {
+                    if (kbStates[code] != InputState.Pressed && kbStates[code] != InputState.Hold)
+                        kbStates[code] = InputState.Pressed;
+                }
+                else if (keyControl.wasReleasedThisFrame)
+                    kbStates[code] = InputState.Released;
+            }
+        }
+
+        var mouse = Mouse.current;
+        if (mouse != null && RegisteredInput.TryGetValue(DeviceType.Mouse, out var mouseInputs))
+        {
+            var mouseStates = InputStates[DeviceType.Mouse];
+            foreach (var code in mouseInputs)
+            {
+                var buttonControl = GetMouseButton(mouse, code);
+                if (buttonControl == null)
+                    continue;
+
+                if (buttonControl.wasPressedThisFrame)
+                {
+                    if (mouseStates[code] != InputState.Pressed && mouseStates[code] != InputState.Hold)
+                        mouseStates[code] = InputState.Pressed;
+                }
+                else if (buttonControl.wasReleasedThisFrame)
+                    mouseStates[code] = InputState.Released;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Processes input state transitions and snapshots previous state.
+    /// </summary>
     void Update()
     {
+        PollFocusedInput();
+
         foreach ((var device, var inputs) in RegisteredInput)
         {
             foreach (var code in inputs)
