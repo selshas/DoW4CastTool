@@ -7,7 +7,7 @@ using UnityEngine;
 //
 //   StreamingAssets/Factions/
 //     {FactionName}/
-//       Emblem.png (or .jpg/.jpeg)
+//       Symbol.png (or .jpg/.jpeg)
 //       Heroes/
 //         {HeroName}/
 //           Portrait.png (or .jpg/.jpeg)
@@ -65,13 +65,13 @@ public class FactionDataLoader : MonoBehaviour
     /// <summary> Loads a single faction's emblem and hero list from its directory. </summary>
     private static FactionData LoadFaction(string factionDirPath, string factionName)
     {
-        var emblem = LoadSprite(factionDirPath, "Emblem", factionName);
+        var emblem = LoadSprite(factionDirPath, "Symbol", factionName);
         var heroes = LoadHeroes(factionDirPath, factionName);
 
         return new FactionData
         {
             Name = factionName,
-            Emblem = emblem,
+            Symbol = emblem,
             Heroes = heroes,
         };
     }

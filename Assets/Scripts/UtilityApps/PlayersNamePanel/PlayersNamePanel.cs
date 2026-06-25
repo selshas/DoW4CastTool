@@ -55,8 +55,8 @@ public class PlayersNamePanel : MonoBehaviour
 
         foreach (var factionData in FactionDataLoader.Instance.Factions.Values)
         {
-            if (factionData.Emblem != null)
-                MiniPortraitSprites.Add(factionData.Emblem);
+            if (factionData.Symbol != null)
+                MiniPortraitSprites.Add(factionData.Symbol);
         }
     }
 }
