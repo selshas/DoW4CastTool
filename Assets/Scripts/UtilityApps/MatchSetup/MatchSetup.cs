@@ -209,7 +209,7 @@ public class MatchSetup : UtilityAppBase
     #endregion
 
     /// <summary>
-    /// Validates match data and loads the IngameOverlay scene if valid.
+    /// Validates match data, persists player names, and loads the IngameOverlay scene.
     /// </summary>
     private void StartMatch()
     {
@@ -219,6 +219,12 @@ public class MatchSetup : UtilityAppBase
             Debug.LogWarning($"[{nameof(MatchSetup)}] StartMatch blocked: {error}");
             return;
         }
+
+        var playerNames = MatchDataManager.Instance.Teams
+            .SelectMany(t => t.PlayerIndices)
+            .Select(i => MatchDataManager.Instance.Players[i].Name);
+
+        PlayerDataLoader.Instance.MergeNames(playerNames);
 
         SceneManager.LoadScene(SceneNames.IngameOverlay);
     }

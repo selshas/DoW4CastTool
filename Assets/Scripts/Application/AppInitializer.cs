@@ -12,6 +12,7 @@ public class AppInitializer : MonoBehaviour
         while (
             !ApplicationSetup.Instance!.IsLoaded
             || !FactionDataLoader.Instance!.IsLoaded
+            || !PlayerDataLoader.Instance!.IsLoaded
         )
             yield return null;
 
