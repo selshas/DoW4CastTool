@@ -38,7 +38,8 @@ public class OutgameAppController : UtilityAppBase
         }
 
         Instance = this;
-        terminationGauge = terminationOverlay.GetComponentInChildren<RingGauge>();
+        terminationOverlay.SetActive(false);
+        terminationGauge = terminationOverlay.GetComponentInChildren<RingGauge>(true);
     }
 
     protected override void Start()
