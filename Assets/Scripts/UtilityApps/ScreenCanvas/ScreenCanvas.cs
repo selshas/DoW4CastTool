@@ -21,8 +21,8 @@ public class ScreenCanvas : DrawableCanvas
             InputState.Pressed, 
             (self) =>
             {
-                GlobalAppController.Instance.ToggleApp_ScreenCanvas();
-                GlobalAppController.Instance.ToggleApp_MinimapCanvas();
+                IngameAppController.Instance.ToggleApp_ScreenCanvas();
+                IngameAppController.Instance.ToggleApp_MinimapCanvas();
             }
         );
     }

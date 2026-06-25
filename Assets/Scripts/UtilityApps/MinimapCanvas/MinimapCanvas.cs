@@ -72,8 +72,8 @@ public class MinimapCanvas : DrawableCanvas
             InputState.Pressed,
             (self) =>
             {
-                GlobalAppController.Instance.ToggleApp_MinimapCanvas();
-                GlobalAppController.Instance.ToggleApp_ScreenCanvas();
+                IngameAppController.Instance.ToggleApp_MinimapCanvas();
+                IngameAppController.Instance.ToggleApp_ScreenCanvas();
             }
         );
     }

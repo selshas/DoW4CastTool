@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary>
+/// Set environmental condition when the application has been started.
+/// </summary>
 public class ApplicationSetup : MonoBehaviour
 {
     public static ApplicationSetup Instance = null;

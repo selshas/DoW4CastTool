@@ -4,16 +4,17 @@ using UnityEngine.SceneManagement;
 
 public class AppInitializer : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    /// <summary>
+    /// Waits for subsystems to load, then transitions to the outgame scene.
+    /// </summary>
     IEnumerator Start()
     {
-        // Wait Untile subsystems are loaded.
         while (
             !ApplicationSetup.Instance!.IsLoaded
             || !FactionDataLoader.Instance!.IsLoaded
         )
             yield return null;
 
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(SceneNames.OutgameOverlay);
     }
 }

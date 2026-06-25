@@ -69,7 +69,7 @@ public class MatchSetup : UtilityAppBase
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcEscape,
             InputState.Pressed,
-            (self) => GlobalAppController.Instance.ToggleApp_MatchSetup()
+            (self) => OutgameAppController.Instance.ToggleApp_MatchSetup()
         );
     }
 
