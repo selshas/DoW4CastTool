@@ -9,6 +9,7 @@ public class GlobalAppController : UtilityAppBase
 
     public GlobalAppControllerHelper Helper;
 
+    public MatchSetup App_MatchSetup;
     public ScreenCanvas App_ScreenCanvas;
     public MinimapCanvas App_MinimapCanvas;
     public PlayersNamePanel App_PlayersNamePanel;
@@ -54,6 +55,11 @@ public class GlobalAppController : UtilityAppBase
         var isActive = App_MinimapOverlay.gameObject.activeSelf;
         App_MinimapOverlay.gameObject.SetActive(!isActive);
     }
+    public void ToggleApp_MatchSetup()
+    {
+        var isActive = App_MatchSetup.gameObject.activeSelf;
+        App_MatchSetup.gameObject.SetActive(!isActive);
+    }
     protected void Awake()
     {
         Instance ??= this;
@@ -67,6 +73,14 @@ public class GlobalAppController : UtilityAppBase
     public override void InitializeInputs()
     {
         #region Toggle Apps
+        AddInputCmd(
+            DeviceType.Keyboard, (uint)KeyCode.VcF1,
+            InputState.Pressed,
+            (self) =>
+            {
+                ToggleApp_MatchSetup();
+            }
+        );
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcF2,
             InputState.Pressed,

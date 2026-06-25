@@ -107,19 +107,57 @@ public class MatchDataManager : MonoBehaviour
 
     public void RemovePlayer(int playerIndex)
     {
-        if (!reservedPlayerIndices.Contains(playerIndex))
-            throw new Exception($"Player index '{playerIndex}' is already used.");
-
         if (playerIndex < 0 || playerIndex >= Players.Count)
             throw new Exception($"Player index '{playerIndex}' is out of valid range.");
 
-        var player = Players[playerIndex];
-        var team = Teams[player.TeamIndex];
+        if (reservedPlayerIndices.Contains(playerIndex))
+            throw new Exception($"Player index '{playerIndex}' is already removed.");
 
-        team.PlayerIndices.Remove(playerIndex);
+        var player = Players[playerIndex];
+
+        if (player.TeamIndex >= 0 && player.TeamIndex < Teams.Count)
+            Teams[player.TeamIndex].PlayerIndices.Remove(playerIndex);
+
+        player.TeamIndex = -1;
         reservedPlayerIndices.Push(playerIndex);
     }
 
+    /// <summary>
+    /// Creates a new player and assigns it to the specified team.
+    /// </summary>
+    public int AddPlayerToTeam(int teamIndex)
+    {
+        var playerIndex = AddPlayer();
+        var player = Players[playerIndex];
+
+        player.TeamIndex = teamIndex;
+        Teams[teamIndex].PlayerIndices.Add(playerIndex);
+
+        Debug.Log($"[{nameof(MatchDataManager)}] AddPlayerToTeam: Player {playerIndex} added to Team {teamIndex}. Team now has {Teams[teamIndex].PlayerIndices.Count} players.");
+
+        return playerIndex;
+    }
+
+    /// <summary>
+    /// Moves an existing player from its current team to a new team.
+    /// </summary>
+    public void MovePlayerToTeam(int playerIndex, int newTeamIndex)
+    {
+        var player = Players[playerIndex];
+        var oldTeamIndex = player.TeamIndex;
+
+        if (oldTeamIndex >= 0 && oldTeamIndex < Teams.Count)
+            Teams[oldTeamIndex].PlayerIndices.Remove(playerIndex);
+
+        player.TeamIndex = newTeamIndex;
+        Teams[newTeamIndex].PlayerIndices.Add(playerIndex);
+
+        Debug.Log($"[{nameof(MatchDataManager)}] MovePlayerToTeam: Player {playerIndex} moved from Team {oldTeamIndex} to Team {newTeamIndex}.");
+    }
+
+    /// <summary>
+    /// Creates a new team with one initial player.
+    /// </summary>
     public void AddTeam()
     {
         var team = new MatchTeam
@@ -128,10 +166,12 @@ public class MatchDataManager : MonoBehaviour
             Color = Color.white,
         };
 
-        var firstPlayerIndex = AddPlayer();
-        team.PlayerIndices.Add(firstPlayerIndex);
-
         Teams.Add(team);
+
+        var teamIndex = Teams.Count - 1;
+        AddPlayerToTeam(teamIndex);
+
+        Debug.Log($"[{nameof(MatchDataManager)}] AddTeam: Team {teamIndex} created.");
     }
 
     public void RemoveTeam(int teamIndex)
@@ -145,32 +185,44 @@ public class MatchDataManager : MonoBehaviour
         Teams.RemoveAt(teamIndex);
     }
 
+    /// <summary>
+    /// Applies the given match mode, adjusting team count and trimming excess players.
+    /// </summary>
     public void ApplyMatchMode(MatchMode mode)
     {
         CurrentMatchMode = mode;
 
         var config = MATCH_CONFIGS[mode];
 
-        Teams.Clear();
-        Players.Clear();
-
-        // Change TeamCount
         var teamCount = config.TeamCount;
         if (Teams.Count > teamCount)
         {
-            // TeamCount is going to reduce.
-
-            for (var i = (Teams.Count - 1); i >= teamCount; i--)
+            for (var i = Teams.Count - 1; i >= teamCount; i--)
                 RemoveTeam(i);
         }
         else
         {
-            // TeamCount is going to increase.
-
             for (var i = Teams.Count; i < teamCount; i++)
                 AddTeam();
         }
 
-        Debug.Log($"[{nameof(MatchDataManager)}] TeamCount: {Teams.Count}");
+        TrimPlayersToTeamSize(config.TeamSize);
+
+        Debug.Log($"[{nameof(MatchDataManager)}] TeamCount: {Teams.Count}, TeamSize: {config.TeamSize}");
+    }
+
+    /// <summary>
+    /// Removes players exceeding the given team size from all teams.
+    /// </summary>
+    private void TrimPlayersToTeamSize(int teamSize)
+    {
+        foreach (var team in Teams)
+        {
+            while (team.PlayerIndices.Count > teamSize)
+            {
+                var lastPlayerIndex = team.PlayerIndices[team.PlayerIndices.Count - 1];
+                RemovePlayer(lastPlayerIndex);
+            }
+        }
     }
 }

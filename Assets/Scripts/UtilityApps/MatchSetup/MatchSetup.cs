@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -8,6 +9,8 @@ using KeyCode = SharpHook.Native.KeyCode;
 
 public class MatchSetup : UtilityAppBase
 {
+    public static MatchSetup Instance { get; private set; }
+
     private static readonly Color[] TEAM_COLORS = {
         new Color(0.9f, 0.2f, 0.2f),
         new Color(0.2f, 0.4f, 0.9f),
@@ -17,88 +20,48 @@ public class MatchSetup : UtilityAppBase
 
     private static readonly string[] TEAM_DEFAULT_NAMES = { "Red", "Blue", "Green", "Yellow" };
 
-    private static readonly MatchMode[] MODE_ORDER = {
-        MatchMode.OneOnOne, MatchMode.TwoOnTwo, MatchMode.ThreeOnThree, MatchMode.FreeForAll
-    };
-
-    private static readonly Dictionary<MatchMode, MatchConfig> MATCH_CONFIGS = new Dictionary<MatchMode, MatchConfig>
+    private static readonly MatchMode[] MODE_ORDER = 
     {
-        { MatchMode.OneOnOne, new MatchConfig
-            {
-                Label = "1v1",
-                TeamCount = 2,
-                TeamSize = 1,
-            }
-        },
-        { MatchMode.TwoOnTwo, new MatchConfig
-            {
-                Label = "2v2",
-                TeamCount = 2,
-                TeamSize = 2,
-            }
-        },
-        { MatchMode.ThreeOnThree, new MatchConfig
-            {
-                Label = "3v3",
-                TeamCount = 2,
-                TeamSize = 3,
-            }
-        },
-        { MatchMode.FreeForAll, new MatchConfig
-            {
-                Label = "FFA",
-                TeamCount = 4,
-                TeamSize = 1,
-            }
-        },
+        MatchMode.OneOnOne, MatchMode.TwoOnTwo, MatchMode.ThreeOnThree, MatchMode.FreeForAll
     };
 
     private const int TEAMS_PER_ROW = 2;
 
 
-    [Header("Mode Selection")]
-    [SerializeField] public RectTransform Proto_ModeToggles;
-    [SerializeField] private RectTransform inst_ModeToggles;
+    [SerializeField] public RectTransform MatchModeSelector;
+    [SerializeField] public RectTransform TeamListContainer;
+    [SerializeField] public RectTransform FFAPlayerListContainer;
+    [SerializeField] private GameObject prefab_PlayerPlate;
 
-    [Header("Team Setup")]
-    [SerializeField] private GameObject proto_TeamListRow;
-    [SerializeField] private GameObject proto_TeamSlot;
-    [SerializeField] private GameObject proto_PlayerSlot;
-
-    [SerializeField] private RectTransform inst_TeamList;
 
     [Header("Map Selection")]
     [SerializeField] private TMP_Dropdown dropdown_Map;
     [SerializeField] private RawImage image_MapPreview;
 
-    private Faction[] allFactions;
-
     private List<MapData> filteredMaps = new List<MapData>();
 
     private void Awake()
     {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+
         MapDataLoader.Load();
 
-        var factionList = new List<Faction>();
-        foreach (Faction faction in System.Enum.GetValues(typeof(Faction)))
-        {
-            if (faction != Faction.None)
-                factionList.Add(faction);
-        }
-        allFactions = factionList.ToArray();
-
-        proto_TeamListRow.SetActive(false);
-        ClearInstantiatedRows();
-
-        InitModeToggles();
         dropdown_Map.onValueChanged.AddListener(OnMapSelected);
-
-        ApplyMatchMode(MatchMode.OneOnOne);
     }
 
     protected override void Start()
     {
         base.Start();
+
+        InitializeMatchModeSelector();
+
+        ApplyMatchMode(MatchDataManager.Instance.CurrentMatchMode);
     }
 
     public override void InitializeInputs()
@@ -112,29 +75,72 @@ public class MatchSetup : UtilityAppBase
 
     #region Mode Selection
 
-    private void InitModeToggles()
+    private void InitializeMatchModeSelector()
     {
-        var toggleGroup = inst_ModeToggles.GetComponent<ToggleGroup>();
-        var modeIndex = 0;
+        Debug.Log($"[{nameof(MatchSetup)}] MatchModeList Initialized.");
 
-        foreach (Transform child in inst_ModeToggles)
+        var toggleGroup = MatchModeSelector.GetComponent<ToggleGroup>();
+        var items = MODE_ORDER.Select(x => MatchDataManager.MATCH_CONFIGS[x]).ToArray();
+        var uiItemList = new UIItemList<MatchConfig>(MatchModeSelector, items, (child, data) =>
         {
-            var toggle = child.GetComponent<Toggle>();
-            if ((toggle == null) || (modeIndex >= MODE_ORDER.Length))
-                continue;
-
-            var mode = MODE_ORDER[modeIndex];
-
+            var label = child.Find("Label").GetComponent<TextMeshProUGUI>();
+            var toggle = child.GetComponentInChildren<Toggle>();
+            
+            label.text = data.Label;
             toggle.group = toggleGroup;
-            toggle.isOn = (modeIndex == 0);
-            toggle.onValueChanged.AddListener(isOn =>
-            {
-                if (isOn)
-                    ApplyMatchMode(mode);
-            });
 
-            modeIndex++;
-        }
+            var matchMode = data.Mode;
+            toggle.onValueChanged.RemoveAllListeners();
+            toggle.onValueChanged.AddListener((isSet) =>
+            {
+                if (!isSet)
+                    return;
+
+                ApplyMatchMode(matchMode);
+            });
+        });
+
+        uiItemList.GetInstance(0).GetComponentInChildren<Toggle>().SetIsOnWithoutNotify(true);
+    }
+
+    private void RebuildTeamList()
+    {
+        Debug.Log($"[{nameof(MatchSetup)}] Rebuild TeamList.");
+
+        var config = MatchDataManager.MATCH_CONFIGS[MatchDataManager.Instance.CurrentMatchMode];
+        var teamSize = config.TeamSize;
+
+
+        var teams = MatchDataManager.Instance.Teams;
+        var uiItemList = new UIItemList<MatchTeam>(TeamListContainer, teams, (child, data) =>
+        {
+            var currentTeamIndex = teams.IndexOf(data);
+            var team = teams[currentTeamIndex];
+
+            Debug.Log($"[{nameof(MatchSetup)}] RebuildTeamList: Binding Team {currentTeamIndex}, TeamSize={teamSize}, Players={team.PlayerIndices.Count}.");
+
+            var playerSlotsContainer = child.Find("PlayerSlots");
+
+            for (var i = 0; i < playerSlotsContainer.childCount; i++)
+            {
+                var slot = playerSlotsContainer.GetChild(i);
+                slot.gameObject.SetActive(i < teamSize);
+
+                var playerSlot = slot.GetComponent<PlayerSlot>();
+                if (playerSlot == null)
+                    continue;
+
+                playerSlot.SetTeamIndex(currentTeamIndex);
+
+                if (i < team.PlayerIndices.Count)
+                    CreatePlayerPlate(playerSlot, team.PlayerIndices[i]);
+            }
+        });
+
+        for (var i = 0; i < uiItemList.Count; i++)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(uiItemList.GetInstance(i) as RectTransform);
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(TeamListContainer);
     }
 
     #endregion
@@ -143,14 +149,16 @@ public class MatchSetup : UtilityAppBase
 
     private void RefreshMapDropdown()
     {
-        filteredMaps = MapDataLoader.GetByMatchMode(MatchDataManager.Instance.Mode);
+        filteredMaps = MapDataLoader.GetByMatchMode(MatchDataManager.Instance.CurrentMatchMode);
         dropdown_Map.ClearOptions();
 
         if (filteredMaps.Count == 0)
         {
             dropdown_Map.AddOptions(new List<string> { "No Maps" });
             dropdown_Map.interactable = false;
+
             ApplyMapPreview(null);
+
             return;
         }
 
@@ -162,6 +170,7 @@ public class MatchSetup : UtilityAppBase
 
         dropdown_Map.AddOptions(options);
         dropdown_Map.value = 0;
+
         OnMapSelected(0);
     }
 
@@ -169,12 +178,12 @@ public class MatchSetup : UtilityAppBase
     {
         if ((index < 0) || (index >= filteredMaps.Count))
         {
-            MatchDataManager.Instance.Map = null;
+            MatchDataManager.Instance.CurrentMap = null;
             ApplyMapPreview(null);
             return;
         }
 
-        MatchDataManager.Instance.Map = filteredMaps[index];
+        MatchDataManager.Instance.CurrentMap = filteredMaps[index];
         ApplyMapPreview(filteredMaps[index]);
     }
 
@@ -198,173 +207,39 @@ public class MatchSetup : UtilityAppBase
 
     private void ApplyMatchMode(MatchMode mode)
     {
-        var state = MatchDataManager.Instance;
-        var config = MATCH_CONFIGS[mode];
+        MatchDataManager.Instance.ApplyMatchMode(mode);
 
-        state.Mode = mode;
-        state.Teams.Clear();
-        state.Players.Clear();
-
-        var playerIndex = 0;
-        for (var t = 0; t < config.TeamCount; t++)
-        {
-            var team = new MatchTeam
-            {
-                Name = TEAM_DEFAULT_NAMES[t % TEAM_DEFAULT_NAMES.Length],
-                Color = TEAM_COLORS[t % TEAM_COLORS.Length],
-            };
-
-            for (var p = 0; p < config.TeamSize; p++)
-            {
-                state.Players.Add(new MatchPlayer());
-                team.PlayerIndices.Add(playerIndex++);
-            }
-
-            state.Teams.Add(team);
-        }
-
-        RebuildTeamUI();
         RefreshMapDropdown();
+        RebuildTeamList();
     }
 
     #endregion
 
-    #region Team / Player UI
+    #region Player Plate
 
-    private void RebuildTeamUI()
+    /// <summary>
+    /// Instantiates a PlayerPlate and attaches it to the slot. Creates a new player if no playerIndex is given.
+    /// </summary>
+    public void CreatePlayerPlate(PlayerSlot slot, int playerIndex = -1)
     {
-        ClearInstantiatedRows();
+        if (playerIndex < 0)
+            playerIndex = MatchDataManager.Instance.AddPlayerToTeam(slot.TeamIndex);
 
-        var state = MatchDataManager.Instance;
-        for (var i = 0; i < state.Teams.Count; i += TEAMS_PER_ROW)
-        {
-            var rowGO = Instantiate(proto_TeamListRow, inst_TeamList);
-            rowGO.SetActive(true);
+        var plateObject = Instantiate(prefab_PlayerPlate, slot.transform);
+        var plate = plateObject.GetComponent<PlayerPlate>();
 
-            ClearChildren(rowGO.transform);
+        plate.SetPlayerIndex(playerIndex);
+        slot.AttachPlate(plate);
 
-            var rowEndIndex = Mathf.Min(i + TEAMS_PER_ROW, state.Teams.Count);
-            for (var t = i; t < rowEndIndex; t++)
-            {
-                var teamGO = Instantiate(proto_TeamSlot, rowGO.transform);
-                teamGO.SetActive(true);
-                BindTeamSlot(teamGO.transform, state.Teams[t]);
-            }
-        }
-    }
-
-    private void BindTeamSlot(Transform slot, MatchTeam team)
-    {
-        var label = slot.Find("Label").GetComponent<TextMeshProUGUI>();
-        label.text = team.Name;
-        label.color = team.Color;
-
-        var container = slot.Find("PlayerSlots");
-        ClearChildren(container);
-
-        var state = MatchDataManager.Instance;
-        foreach (var playerIndex in team.PlayerIndices)
-        {
-            var playerGO = Instantiate(proto_PlayerSlot, container);
-            playerGO.SetActive(true);
-            BindPlayerSlot(playerGO.transform, state.Players[playerIndex]);
-        }
-    }
-
-    private void BindPlayerSlot(Transform slot, MatchPlayer player)
-    {
-        var nameInput = slot.Find("PlayerName").GetComponent<TMP_InputField>();
-        nameInput.text = player.Name ?? "";
-        nameInput.onValueChanged.AddListener(val => player.Name = val);
-
-        if ((player.Faction == Faction.None) && (allFactions.Length > 0))
-            player.Faction = allFactions[0];
-
-        var factionImage = slot.Find("Faction").GetComponent<RawImage>();
-        var heroImage = slot.Find("Hero").GetComponent<RawImage>();
-
-        ApplyHeroPortrait(player, heroImage);
-
-        AddClickHandler(factionImage.gameObject, () =>
-        {
-            CycleFaction(player);
-            ApplyHeroPortrait(player, heroImage);
-        });
-
-        AddClickHandler(heroImage.gameObject, () =>
-        {
-            CycleHero(player);
-            ApplyHeroPortrait(player, heroImage);
-        });
+        Debug.Log($"[{nameof(MatchSetup)}] CreatePlayerPlate: Player {playerIndex} attached to Team {slot.TeamIndex}.");
     }
 
     #endregion
 
-    #region Faction / Hero
-
-    private void CycleFaction(MatchPlayer player)
+    private void OnDestroy()
     {
-        if (allFactions.Length == 0)
-            return;
-
-        var factionIndex = System.Array.IndexOf(allFactions, player.Faction);
-        factionIndex = (factionIndex + 1) % allFactions.Length;
-
-        player.Faction = allFactions[factionIndex];
-        player.HeroName = null;
-    }
-
-    private void CycleHero(MatchPlayer player)
-    {
-        var factionData = FactionDataLoader.Instance.GetByName(player.Faction.ToString());
-        if (factionData == null)
-            return;
-
-        var heroes = factionData.Heroes;
-        if (heroes.Count == 0)
-            return;
-
-        var heroIndex = heroes.FindIndex(h => h.Name == player.HeroName);
-        heroIndex = (heroIndex + 1) % heroes.Count;
-
-        player.HeroName = heroes[heroIndex].Name;
-    }
-
-    private void ApplyHeroPortrait(MatchPlayer player, RawImage image)
-    {
-        var factionData = FactionDataLoader.Instance.GetByName(player.Faction.ToString());
-        var heroes = (factionData != null)
-            ? factionData.Heroes
-            : new List<HeroData>();
-
-        var matchedHero = default(HeroData);
-        if (player.HeroName != null)
-            matchedHero = heroes.Find(h => h.Name == player.HeroName);
-
-        if ((matchedHero != null) && (matchedHero.Portrait != null))
-        {
-            image.texture = matchedHero.Portrait.texture;
-            image.color = Color.white;
-        }
-        else
-        {
-            image.texture = null;
-            image.color = new Color(0.3f, 0.3f, 0.3f);
-        }
-    }
-
-    #endregion
-
-    #region Helpers
-
-    private void ClearInstantiatedRows()
-    {
-        for (var i = inst_TeamList.childCount - 1; i >= 0; i--)
-        {
-            var child = inst_TeamList.GetChild(i).gameObject;
-            if (child != proto_TeamListRow)
-                Destroy(child);
-        }
+        if (Instance == this)
+            Instance = null;
     }
 
     private void ClearChildren(Transform parent)
@@ -384,6 +259,4 @@ public class MatchSetup : UtilityAppBase
 
         button.onClick.AddListener(action);
     }
-
-    #endregion
 }
