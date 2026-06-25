@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 using static GlobalInputSystem;
@@ -38,6 +39,9 @@ public class MatchSetup : UtilityAppBase
     [SerializeField] private TMP_Dropdown dropdown_Map;
     [SerializeField] private RawImage image_MapPreview;
 
+    [Header("Actions")]
+    [SerializeField] private Button button_StartMatch;
+
     private List<MapData> filteredMaps = new List<MapData>();
 
     private void Awake()
@@ -53,6 +57,7 @@ public class MatchSetup : UtilityAppBase
         MapDataLoader.Load();
 
         dropdown_Map.onValueChanged.AddListener(OnMapSelected);
+        button_StartMatch.onClick.AddListener(StartMatch);
     }
 
     protected override void Start()
@@ -202,6 +207,14 @@ public class MatchSetup : UtilityAppBase
     }
 
     #endregion
+
+    /// <summary>
+    /// Loads the IngameOverlay scene to begin the match.
+    /// </summary>
+    private void StartMatch()
+    {
+        SceneManager.LoadScene(SceneNames.IngameOverlay);
+    }
 
     #region Match Mode
 
