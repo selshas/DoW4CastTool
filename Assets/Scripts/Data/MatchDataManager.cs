@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MatchDataManager : SingletonBehaviour<MatchDataManager>
@@ -215,5 +216,30 @@ public class MatchDataManager : SingletonBehaviour<MatchDataManager>
                 RemovePlayer(lastPlayerIndex);
             }
         }
+    }
+
+    /// <summary>
+    /// Validates match data readiness. Returns null if valid, or an error message describing the first failure.
+    /// </summary>
+    public string ValidateMatch()
+    {
+        if (Teams.Count < 2)
+            return "At least two teams are required.";
+
+        for (var i = 0; i < Teams.Count; i++)
+        {
+            if (Teams[i].PlayerCount == 0)
+                return $"Team {i + 1} has no players.";
+        }
+
+        var activePlayerIndices = Teams.SelectMany(t => t.PlayerIndices);
+        foreach (var playerIndex in activePlayerIndices)
+        {
+            var player = Players[playerIndex];
+            if (string.IsNullOrWhiteSpace(player.Name))
+                return $"Player {playerIndex + 1} has no name.";
+        }
+
+        return null;
     }
 }

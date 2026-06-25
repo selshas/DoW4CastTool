@@ -209,10 +209,17 @@ public class MatchSetup : UtilityAppBase
     #endregion
 
     /// <summary>
-    /// Loads the IngameOverlay scene to begin the match.
+    /// Validates match data and loads the IngameOverlay scene if valid.
     /// </summary>
     private void StartMatch()
     {
+        var error = MatchDataManager.Instance.ValidateMatch();
+        if (error != null)
+        {
+            Debug.LogWarning($"[{nameof(MatchSetup)}] StartMatch blocked: {error}");
+            return;
+        }
+
         SceneManager.LoadScene(SceneNames.IngameOverlay);
     }
 
