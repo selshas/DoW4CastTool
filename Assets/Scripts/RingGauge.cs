@@ -81,6 +81,7 @@ public class RingGauge : MaskableGraphic
         }
     }
 
+#if UNITY_EDITOR
     /// <summary>
     /// Rebuilds the mesh when Inspector values change.
     /// </summary>
@@ -89,4 +90,5 @@ public class RingGauge : MaskableGraphic
         base.OnValidate();
         SetVerticesDirty();
     }
+#endif
 }
