@@ -11,23 +11,16 @@ using UnityEngine;
 //       Heroes/
 //         {HeroName}/
 //           Portrait.png (or .jpg/.jpeg)
-public class FactionDataLoader : MonoBehaviour
+public class FactionDataLoader : SingletonBehaviour<FactionDataLoader>
 {
-    public static FactionDataLoader Instance { get; private set; }
-
     public bool IsLoaded { get; private set; } = false;
     public Dictionary<string, FactionData> Factions { get; private set; } = new Dictionary<string, FactionData>();
 
-    private void Awake()
+    /// <summary>
+    /// Loads all faction data from StreamingAssets on initialization.
+    /// </summary>
+    protected override void OnInitialize()
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-
         Load();
 
         IsLoaded = true;

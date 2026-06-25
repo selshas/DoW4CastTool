@@ -7,10 +7,8 @@ using UnityEngine.UI;
 /// <summary>
 /// Set environmental condition when the application has been started.
 /// </summary>
-public class ApplicationSetup : MonoBehaviour
+public class ApplicationSetup : SingletonBehaviour<ApplicationSetup>
 {
-    public static ApplicationSetup Instance = null;
-
     public static bool RaycastDetected = false;
 
     public static bool InteractionMode
@@ -43,19 +41,14 @@ public class ApplicationSetup : MonoBehaviour
     private GraphicRaycaster raycaster;
     public static List<RaycastResult> RaycastResults = new List<RaycastResult>();
 
-    public bool IsLoaded { get; private set; } = false; 
+    public bool IsLoaded { get; private set; } = false;
     public List<UtilityAppBase> UtilityApps = new List<UtilityAppBase>();
 
-    private void Awake()
+    /// <summary>
+    /// Configures application environment, window style, and transparency.
+    /// </summary>
+    protected override void OnInitialize()
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-
         proc = System.Diagnostics.Process.GetCurrentProcess();
 
         Application.runInBackground = true;
@@ -74,8 +67,6 @@ public class ApplicationSetup : MonoBehaviour
         Win32API.SetWindowPos(hWnd, new IntPtr(-1), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 #endif
 
-        DontDestroyOnLoad(gameObject);
-        
         IsLoaded = true;
     }
 

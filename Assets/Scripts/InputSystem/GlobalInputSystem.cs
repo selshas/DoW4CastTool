@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 using SharpHook;
 using System.Linq;
 
-public partial class GlobalInputSystem : MonoBehaviour
+public partial class GlobalInputSystem : SingletonBehaviour<GlobalInputSystem>
 {
-    public static GlobalInputSystem Instance = null;
-
     public Dictionary<DeviceType, Dictionary<uint, InputState>> InputStates = new Dictionary<DeviceType, Dictionary<uint, InputState>>();
     public Dictionary<DeviceType, Dictionary<uint, InputState>> InputStates_prev = new Dictionary<DeviceType, Dictionary<uint, InputState>>();
 
@@ -19,11 +18,11 @@ public partial class GlobalInputSystem : MonoBehaviour
     private TaskPoolGlobalHook hooker;
 
     /// <summary>
-    /// Initializes and starts the global input hook.
+    /// Starts the global input hook and subscribes to scene change events.
     /// </summary>
-    private async void Awake()
+    protected override async void OnInitialize()
     {
-        Instance ??= this;
+        SceneManager.sceneLoaded += OnSceneLoaded;
 
         hooker = new TaskPoolGlobalHook(runAsyncOnBackgroundThread: false);
         hooker.MousePressed += Hook_MousePressed;
@@ -39,8 +38,10 @@ public partial class GlobalInputSystem : MonoBehaviour
     /// <summary>
     /// Unsubscribes hook events and disposes the hook.
     /// </summary>
-    private void OnDestroy()
+    protected override void OnDispose()
     {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+
         hooker.MousePressed -= Hook_MousePressed;
         hooker.MouseReleased -= Hook_MouseReleased;
         hooker.KeyPressed -= Hook_KeyboardPressed;
@@ -51,24 +52,40 @@ public partial class GlobalInputSystem : MonoBehaviour
         Debug.Log("SharpHookAgent Destroyed");
     }
 
+    /// <summary>
+    /// Clears all input registrations and state so the new scene's UtilityApps can re-register.
+    /// </summary>
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        RegisteredInput.Clear();
+        InputStates.Clear();
+        InputStates_prev.Clear();
+    }
+
     private void Hook_KeyboardPressed(object sender, KeyboardHookEventArgs e)
     {
         var keyCode = e.Data.KeyCode;
 
-        var inputStates = InputStates[DeviceType.Keyboard];
-        if (
-            inputStates[(uint)keyCode] == InputState.Pressed
-            || inputStates[(uint)keyCode] == InputState.Hold
-        )
+        if (!InputStates.TryGetValue(DeviceType.Keyboard, out var inputStates))
+            return;
+        if (!inputStates.TryGetValue((uint)keyCode, out var currentState))
+            return;
+
+        if (currentState == InputState.Pressed || currentState == InputState.Hold)
             return;
 
         inputStates[(uint)keyCode] = InputState.Pressed;
     }
+
     private void Hook_KeyboardReleased(object sender, KeyboardHookEventArgs e)
     {
         var keyCode = e.Data.KeyCode;
 
-        var inputStates = InputStates[DeviceType.Keyboard];
+        if (!InputStates.TryGetValue(DeviceType.Keyboard, out var inputStates))
+            return;
+        if (!inputStates.ContainsKey((uint)keyCode))
+            return;
+
         inputStates[(uint)keyCode] = InputState.Released;
     }
 
@@ -76,7 +93,11 @@ public partial class GlobalInputSystem : MonoBehaviour
     {
         var mouseCode = e.Data.Button;
 
-        var inputStates = InputStates[DeviceType.Mouse];
+        if (!InputStates.TryGetValue(DeviceType.Mouse, out var inputStates))
+            return;
+        if (!inputStates.ContainsKey((uint)mouseCode))
+            return;
+
         inputStates[(uint)mouseCode] = InputState.Pressed;
     }
 
@@ -84,7 +105,11 @@ public partial class GlobalInputSystem : MonoBehaviour
     {
         var mouseCode = e.Data.Button;
 
-        var inputStates = InputStates[DeviceType.Mouse];
+        if (!InputStates.TryGetValue(DeviceType.Mouse, out var inputStates))
+            return;
+        if (!inputStates.ContainsKey((uint)mouseCode))
+            return;
+
         inputStates[(uint)mouseCode] = InputState.Released;
     }
 
@@ -152,7 +177,7 @@ public partial class GlobalInputSystem : MonoBehaviour
     /// <summary>
     /// Processes input state transitions and snapshots previous state.
     /// </summary>
-    void Update()
+    private void Update()
     {
         PollFocusedInput();
 

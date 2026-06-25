@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MatchDataManager : MonoBehaviour
+public class MatchDataManager : SingletonBehaviour<MatchDataManager>
 {
-    public static MatchDataManager Instance { get; private set; }
-
     public MatchMode CurrentMatchMode;
     public MapData CurrentMap;
 
@@ -54,19 +52,12 @@ public class MatchDataManager : MonoBehaviour
         },
     };
 
-    private void Awake()
+    /// <summary>
+    /// Sets the default match mode.
+    /// </summary>
+    protected override void OnInitialize()
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-
         CurrentMatchMode = MatchMode.OneOnOne;
-
-        DontDestroyOnLoad(gameObject);
     }
 
     public void Reset()
