@@ -87,7 +87,13 @@ public class OutgameAppController : UtilityAppBase
                 terminationGauge.FillAmount = timer_quit / timeToHoldToQuit;
 
                 if (timer_quit >= timeToHoldToQuit)
+                {
+#if UNITY_EDITOR
+                    UnityEditor.EditorApplication.isPlaying = false;
+#else
                     Application.Quit();
+#endif
+                }
             }
         );
         #endregion Exit Command
