@@ -51,6 +51,26 @@ public class UIItemList<T>
     }
 
     /// <summary>
+    /// Updates the list with a new dataset. Reuses existing instances, instantiates more if needed, and disables excess.
+    /// </summary>
+    public void UpdateItems(IList<T> items)
+    {
+        var newCount = items.Count;
+
+        for (var i = instances.Count; i < newCount; i++)
+            InstantiateItem(items[i], i);
+
+        for (var i = 0; i < newCount; i++)
+        {
+            instances[i].SetActive(true);
+            onBind(instances[i].transform, items[i]);
+        }
+
+        for (var i = newCount; i < instances.Count; i++)
+            instances[i].SetActive(false);
+    }
+
+    /// <summary>
     /// Returns the Transform of the instantiated element at the given index.
     /// </summary>
     public Transform GetInstance(int index)
