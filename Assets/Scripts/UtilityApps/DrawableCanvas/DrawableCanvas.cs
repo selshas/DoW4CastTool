@@ -72,8 +72,7 @@ public abstract partial class DrawableCanvas : UtilityAppBase
     {
         base.Start();
 
-        Win32API.GetCursorPos(out Win32API.POINT initCursorPoint);
-        cursorPos_prev = cursorPos_curr = new Vector2(initCursorPoint.x, Screen.height - initCursorPoint.y);
+        cursorPos_prev = cursorPos_curr = ApplicationSetup.GetCursorViewportPosition();
 
         Mat_DrawSpot.SetVector("_Color", CurrentPenColor);
 
@@ -115,9 +114,7 @@ public abstract partial class DrawableCanvas : UtilityAppBase
         base.Update();
 
         cursorPos_prev = cursorPos_curr;
-
-        Win32API.GetCursorPos(out Win32API.POINT cursorPoint);
-        cursorPos_curr = new Vector2(cursorPoint.x, Screen.height - cursorPoint.y);
+        cursorPos_curr = ApplicationSetup.GetCursorViewportPosition();
         transform_emulatedCursor.position = cursorPos_curr;
 
         transform_emulatedCursor.gameObject.SetActive(IsCursorInsideCanvas());

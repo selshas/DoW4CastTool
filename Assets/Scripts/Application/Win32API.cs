@@ -54,6 +54,9 @@ public static class Win32API
     [DllImport("user32.dll")]
     public static extern bool GetCursorPos(out POINT lpPoint);
 
+    [DllImport("user32.dll")]
+    public static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
+
 
     [DllImport("user32.dll")]
     public static extern bool UnhookWindowsHookEx(IntPtr hhook);

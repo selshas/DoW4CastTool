@@ -50,14 +50,12 @@ public class ApplicationSetup : SingletonBehaviour<ApplicationSetup>
     protected override void OnInitialize()
     {
         proc = System.Diagnostics.Process.GetCurrentProcess();
+        hWnd = proc.MainWindowHandle;
 
         Application.runInBackground = true;
         Application.targetFrameRate = 60;
 
 #if !UNITY_EDITOR
-
-        hWnd = Win32API.GetActiveWindow();
-
         Win32API.Margin margin = new Win32API.Margin { cx_left = -1 };
         Win32API.DwmExtendFrameIntoClientArea(hWnd, ref margin);
 
@@ -91,6 +89,18 @@ public class ApplicationSetup : SingletonBehaviour<ApplicationSetup>
         Win32API.SetFocus(proc.MainWindowHandle);
     }
 
+    /// <summary>
+    /// Converts the OS cursor position to Unity viewport coordinates.
+    /// </summary>
+    public static Vector2 GetCursorViewportPosition()
+    {
+        Win32API.GetCursorPos(out Win32API.POINT cursorPoint);
+        if (hWnd != IntPtr.Zero)
+            Win32API.ScreenToClient(hWnd, ref cursorPoint);
+
+        return new Vector2(cursorPoint.x, Screen.height - cursorPoint.y);
+    }
+
     private void Update()
     {
         if (!InteractionMode)
@@ -109,10 +119,8 @@ public class ApplicationSetup : SingletonBehaviour<ApplicationSetup>
             ? CursorLockMode.Confined
             : CursorLockMode.None;
 
-        Win32API.GetCursorPos(out Win32API.POINT cursorPos);
-
-        PointerEventData ped = new PointerEventData(null);
-        ped.position = new Vector2(cursorPos.x, Screen.height - cursorPos.y);
+        var ped = new PointerEventData(null);
+        ped.position = GetCursorViewportPosition();
 
 
         raycaster.Raycast(ped, RaycastResults);
