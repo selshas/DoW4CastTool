@@ -16,6 +16,9 @@ public class IngameAppController : UtilityAppBase
     public ScreenVeil App_ScreenVeil;
     public MinimapOverlay App_MinimapOverlay;
 
+    [SerializeField] private GameObject closingMatchOverlay;
+    [SerializeField] private RectTransform closingMatchGauge;
+
     public float timeToHoldToQuit = 2.0f;
     private float timer_quit = 0.0f;
 
@@ -71,7 +74,7 @@ public class IngameAppController : UtilityAppBase
     }
 
     /// <summary>
-    /// Registers the singleton instance.
+    /// Registers the singleton instance and initializes the closing match overlay.
     /// </summary>
     protected void Awake()
     {
@@ -82,6 +85,7 @@ public class IngameAppController : UtilityAppBase
         }
 
         Instance = this;
+        closingMatchOverlay.SetActive(false);
     }
 
     protected override void Start()
@@ -133,7 +137,11 @@ public class IngameAppController : UtilityAppBase
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcBackspace,
             InputState.Released,
-            (self) => timer_quit = 0.0f
+            (self) =>
+            {
+                timer_quit = 0.0f;
+                closingMatchOverlay.SetActive(false);
+            }
         );
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcBackspace,
@@ -141,6 +149,9 @@ public class IngameAppController : UtilityAppBase
             (self) =>
             {
                 timer_quit += Time.deltaTime;
+                closingMatchOverlay.SetActive(true);
+                var fill = Mathf.Clamp01(timer_quit / timeToHoldToQuit);
+                closingMatchGauge.anchorMax = new Vector2(fill, 1f);
 
                 if (timer_quit >= timeToHoldToQuit)
                 {
