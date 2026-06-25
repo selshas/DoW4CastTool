@@ -914,6 +914,7 @@ MonoBehaviour:
   button_Remove: {fileID: 4209594009525659119}
   image_Faction: {fileID: 2799759900650542434}
   image_Hero: {fileID: 2786564484706628219}
+  inputField_PlayerName: {fileID: 7425353876314005226}
 --- !u!1 &6346500697962363954
 GameObject:
   m_ObjectHideFlags: 0

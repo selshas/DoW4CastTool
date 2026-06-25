@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -8,6 +9,7 @@ public class PlayerPlate : MonoBehaviour
     [SerializeField] private Button button_Remove;
     [SerializeField] private RawImage image_Faction;
     [SerializeField] private RawImage image_Hero;
+    [SerializeField] private TMP_InputField inputField_PlayerName;
 
     private Canvas rootCanvas;
     private RectTransform rectTransform;
@@ -33,6 +35,18 @@ public class PlayerPlate : MonoBehaviour
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         button_Remove.onClick.AddListener(OnRemoveClicked);
+        inputField_PlayerName.onValueChanged.AddListener(OnPlayerNameChanged);
+    }
+
+    /// <summary>
+    /// Syncs the input field text to the MatchPlayer data.
+    /// </summary>
+    private void OnPlayerNameChanged(string value)
+    {
+        if (playerIndex < 0)
+            return;
+
+        MatchDataManager.Instance.Players[playerIndex].Name = value;
     }
 
     /// <summary>
