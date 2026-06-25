@@ -81,6 +81,18 @@ public partial class GlobalInputSystem : MonoBehaviour
         inputStates[(uint)mouseCode] = InputState.Released;
     }
 
+    /// <summary>
+    /// Forces the input state of the specified key/button to Idle, cancelling any in-progress press or hold.
+    /// </summary>
+    public void ForceIdle(DeviceType deviceType, uint code)
+    {
+        if (InputStates.TryGetValue(deviceType, out var states) && states.ContainsKey(code))
+            states[code] = InputState.Idle;
+
+        if (InputStates_prev.TryGetValue(deviceType, out var prevStates) && prevStates.ContainsKey(code))
+            prevStates[code] = InputState.Idle;
+    }
+
     void Update()
     {
         foreach ((var device, var inputs) in RegisteredInput)
