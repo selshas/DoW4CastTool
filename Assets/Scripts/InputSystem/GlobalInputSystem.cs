@@ -16,6 +16,7 @@ public partial class GlobalInputSystem : SingletonBehaviour<GlobalInputSystem>
     public Dictionary<DeviceType, List<uint>> RegisteredInput = new Dictionary<DeviceType, List<uint>>();
 
     private TaskPoolGlobalHook hooker;
+    private HashSet<uint> physicallyHeldKeys = new HashSet<uint>();
 
     /// <summary>
     /// Starts the global input hook and subscribes to scene change events.
@@ -64,29 +65,31 @@ public partial class GlobalInputSystem : SingletonBehaviour<GlobalInputSystem>
 
     private void Hook_KeyboardPressed(object sender, KeyboardHookEventArgs e)
     {
-        var keyCode = e.Data.KeyCode;
+        var keyCode = (uint)e.Data.KeyCode;
+
+        if (!physicallyHeldKeys.Add(keyCode))
+            return;
 
         if (!InputStates.TryGetValue(DeviceType.Keyboard, out var inputStates))
             return;
-        if (!inputStates.TryGetValue((uint)keyCode, out var currentState))
+        if (!inputStates.ContainsKey(keyCode))
             return;
 
-        if (currentState == InputState.Pressed || currentState == InputState.Hold)
-            return;
-
-        inputStates[(uint)keyCode] = InputState.Pressed;
+        inputStates[keyCode] = InputState.Pressed;
     }
 
     private void Hook_KeyboardReleased(object sender, KeyboardHookEventArgs e)
     {
-        var keyCode = e.Data.KeyCode;
+        var keyCode = (uint)e.Data.KeyCode;
+
+        physicallyHeldKeys.Remove(keyCode);
 
         if (!InputStates.TryGetValue(DeviceType.Keyboard, out var inputStates))
             return;
-        if (!inputStates.ContainsKey((uint)keyCode))
+        if (!inputStates.ContainsKey(keyCode))
             return;
 
-        inputStates[(uint)keyCode] = InputState.Released;
+        inputStates[keyCode] = InputState.Released;
     }
 
     private void Hook_MousePressed(object sender, MouseHookEventArgs e)
