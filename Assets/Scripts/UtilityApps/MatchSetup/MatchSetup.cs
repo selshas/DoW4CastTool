@@ -242,6 +242,7 @@ public class MatchSetup : UtilityAppBase
         var plate = plateObject.GetComponent<PlayerPlate>();
 
         plate.SetPlayerIndex(playerIndex);
+        plate.ApplyPlayerData(MatchDataManager.Instance.Players[playerIndex]);
         slot.AttachPlate(plate);
 
         Debug.Log($"[{nameof(MatchSetup)}] CreatePlayerPlate: Player {playerIndex} attached to Team {slot.TeamIndex}.");

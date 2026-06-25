@@ -6,6 +6,8 @@ public class PlayerPlate : MonoBehaviour
 {
     [SerializeField] private RectTransform handler;
     [SerializeField] private Button button_Remove;
+    [SerializeField] private RawImage image_Faction;
+    [SerializeField] private RawImage image_Hero;
 
     private Canvas rootCanvas;
     private RectTransform rectTransform;
@@ -47,6 +49,22 @@ public class PlayerPlate : MonoBehaviour
     public void SetPlayerIndex(int index)
     {
         playerIndex = index;
+    }
+
+    /// <summary>
+    /// Sets the faction symbol and hero portrait from the player's data.
+    /// </summary>
+    public void ApplyPlayerData(MatchPlayer player)
+    {
+        var factionData = FactionDataLoader.Instance.GetByName(player.FactionName);
+        if (factionData == null)
+            return;
+
+        if (factionData.Symbol != null)
+            image_Faction.texture = factionData.Symbol.texture;
+
+        if (factionData.Heroes.TryGetValue(player.HeroName, out var heroData) && heroData.Portrait != null)
+            image_Hero.texture = heroData.Portrait.texture;
     }
 
     /// <summary>
