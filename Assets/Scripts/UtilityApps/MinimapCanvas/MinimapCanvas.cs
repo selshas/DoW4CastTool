@@ -70,11 +70,7 @@ public class MinimapCanvas : DrawableCanvas
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcTab,
             InputState.Pressed,
-            (self) =>
-            {
-                IngameAppController.Instance.ToggleApp_MinimapCanvas();
-                IngameAppController.Instance.ToggleApp_ScreenCanvas();
-            }
+            (self) => IngameAppController.Instance.SetAppActive<ScreenCanvas>(true)
         );
     }
 

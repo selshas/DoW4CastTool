@@ -5,6 +5,8 @@ using DeviceType = GlobalInputSystem.DeviceType;
 
 public abstract class UtilityAppBase : MonoBehaviour
 {
+    public int ExclusionGroup = -1;
+
     public List<InputCommand> inputCmds = new List<InputCommand>();
 
     protected virtual void Start()

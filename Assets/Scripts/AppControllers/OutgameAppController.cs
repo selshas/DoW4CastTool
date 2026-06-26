@@ -3,47 +3,18 @@ using static GlobalInputSystem;
 using DeviceType = GlobalInputSystem.DeviceType;
 using KeyCode = SharpHook.Data.KeyCode;
 
-public class OutgameAppController : UtilityAppBase
+public class OutgameAppController : AppController
 {
     public static OutgameAppController Instance { get; private set; }
-
-    public GameObject Helper;
-
-    public MatchSetup App_MatchSetup;
-    public KnownPlayerListManager App_KnownPlayerListManager;
 
     [SerializeField] private GameObject terminationOverlay;
     private RingGauge terminationGauge;
 
     public float timeToHoldToQuit = 2.0f;
-    private float timer_quit = 0.0f;
+    protected float timer_quit = 0.0f;
 
     /// <summary>
-    /// Toggles the MatchSetup visibility.
-    /// </summary>
-    public void ToggleApp_MatchSetup()
-    {
-        var isActive = App_MatchSetup.gameObject.activeSelf;
-        App_MatchSetup.gameObject.SetActive(!isActive);
-
-        if (!isActive)
-            App_KnownPlayerListManager.gameObject.SetActive(false);
-    }
-
-    /// <summary>
-    /// Toggles the KnownPlayerListManager visibility.
-    /// </summary>
-    public void ToggleApp_KnownPlayerListManager()
-    {
-        var isActive = App_KnownPlayerListManager.gameObject.activeSelf;
-        App_KnownPlayerListManager.gameObject.SetActive(!isActive);
-
-        if (!isActive)
-            App_MatchSetup.gameObject.SetActive(false);
-    }
-
-    /// <summary>
-    /// Registers the singleton instance.
+    /// Registers the singleton instance, initializes overlays, and wires toggle listeners.
     /// </summary>
     protected void Awake()
     {
@@ -56,38 +27,24 @@ public class OutgameAppController : UtilityAppBase
         Instance = this;
         terminationOverlay.SetActive(false);
         terminationGauge = terminationOverlay.GetComponentInChildren<RingGauge>(true);
-    }
-
-    protected override void Start()
-    {
-        base.Start();
+        InitializeToggles();
     }
 
     /// <summary>
-    /// Registers hotkey bindings for outgame app toggling, helper, and quit.
+    /// Registers hotkey bindings for outgame app toggling and quit.
     /// </summary>
     public override void InitializeInputs()
     {
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcF1,
             InputState.Pressed,
-            (self) => ToggleApp_MatchSetup()
+            (self) => ToggleApp<MatchSetup>()
         );
 
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcF2,
             InputState.Pressed,
-            (self) => ToggleApp_KnownPlayerListManager()
-        );
-
-        AddInputCmd(
-            DeviceType.Keyboard, (uint)KeyCode.VcF8,
-            InputState.Pressed,
-            (self) =>
-            {
-                if (Helper != null)
-                    Helper.SetActive(!Helper.activeSelf);
-            }
+            (self) => ToggleApp<KnownPlayerListManager>()
         );
 
         #region Exit Command
@@ -106,6 +63,7 @@ public class OutgameAppController : UtilityAppBase
             (self) =>
             {
                 timer_quit += Time.deltaTime;
+
                 terminationOverlay.SetActive(true);
                 terminationGauge.FillAmount = timer_quit / timeToHoldToQuit;
 

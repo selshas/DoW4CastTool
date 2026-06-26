@@ -208,8 +208,11 @@ public abstract partial class DrawableCanvas : UtilityAppBase
             InputState.Pressed,
             (self) =>
             {
-                IngameAppController.Instance.ToggleApp_ScreenCanvas();
-                IngameAppController.Instance.ToggleApp_MinimapCanvas();
+                var controller = IngameAppController.Instance;
+                if (controller.GetApp<ScreenCanvas>().gameObject.activeSelf)
+                    controller.SetAppActive<MinimapCanvas>(true);
+                else
+                    controller.SetAppActive<ScreenCanvas>(true);
             }
         );
 

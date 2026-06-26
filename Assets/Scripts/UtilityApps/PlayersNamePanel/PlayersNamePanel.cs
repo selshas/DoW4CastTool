@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-public class PlayersNamePanel : MonoBehaviour
+public class PlayersNamePanel : UtilityAppBase
 {
     public List<Sprite> MiniPortraitSprites = new List<Sprite>();
 
@@ -32,6 +32,11 @@ public class PlayersNamePanel : MonoBehaviour
             image.sprite = sprite;
         }
     }
+
+    /// <summary>
+    /// No hotkey bindings for PlayersNamePanel.
+    /// </summary>
+    public override void InitializeInputs() { }
 
     private void Awake()
     {

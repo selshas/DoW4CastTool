@@ -4,77 +4,18 @@ using static GlobalInputSystem;
 using DeviceType = GlobalInputSystem.DeviceType;
 using KeyCode = SharpHook.Data.KeyCode;
 
-public class IngameAppController : UtilityAppBase
+public class IngameAppController : AppController
 {
     public static IngameAppController Instance { get; private set; }
-
-    public GameObject Helper;
-
-    public ScreenCanvas App_ScreenCanvas;
-    public MinimapCanvas App_MinimapCanvas;
-    public PlayersNamePanel App_PlayersNamePanel;
-    public ScreenVeil App_ScreenVeil;
-    public MinimapOverlay App_MinimapOverlay;
 
     [SerializeField] private GameObject closingMatchOverlay;
     [SerializeField] private RectTransform closingMatchGauge;
 
     public float timeToHoldToQuit = 2.0f;
-    private float timer_quit = 0.0f;
+    protected float timer_quit = 0.0f;
 
     /// <summary>
-    /// Toggles the ScreenCanvas, disabling MinimapCanvas if activated.
-    /// </summary>
-    public void ToggleApp_ScreenCanvas()
-    {
-        var isActive = App_ScreenCanvas.gameObject.activeSelf;
-        App_ScreenCanvas.gameObject.SetActive(!isActive);
-
-        if (App_ScreenCanvas.gameObject.activeSelf)
-            App_MinimapCanvas.gameObject.SetActive(false);
-    }
-
-    /// <summary>
-    /// Toggles the MinimapCanvas, disabling ScreenCanvas if activated.
-    /// </summary>
-    public void ToggleApp_MinimapCanvas()
-    {
-        var isActive = App_MinimapCanvas.gameObject.activeSelf;
-        App_MinimapCanvas.gameObject.SetActive(!isActive);
-
-        if (App_MinimapCanvas.gameObject.activeSelf)
-            App_ScreenCanvas.gameObject.SetActive(false);
-    }
-
-    /// <summary>
-    /// Toggles the PlayersNamePanel visibility.
-    /// </summary>
-    public void ToggleApp_PlayersNamePanel()
-    {
-        var isActive = App_PlayersNamePanel.gameObject.activeSelf;
-        App_PlayersNamePanel.gameObject.SetActive(!isActive);
-    }
-
-    /// <summary>
-    /// Toggles the ScreenVeil visibility.
-    /// </summary>
-    public void ToggleApp_ScreenVeil()
-    {
-        var isActive = App_ScreenVeil.gameObject.activeSelf;
-        App_ScreenVeil.gameObject.SetActive(!isActive);
-    }
-
-    /// <summary>
-    /// Toggles the MinimapOverlay visibility.
-    /// </summary>
-    public void ToggleApp_MinimapOverlay()
-    {
-        var isActive = App_MinimapOverlay.gameObject.activeSelf;
-        App_MinimapOverlay.gameObject.SetActive(!isActive);
-    }
-
-    /// <summary>
-    /// Registers the singleton instance and initializes the closing match overlay.
+    /// Registers the singleton instance, initializes overlays, and wires toggle listeners.
     /// </summary>
     protected void Awake()
     {
@@ -86,51 +27,37 @@ public class IngameAppController : UtilityAppBase
 
         Instance = this;
         closingMatchOverlay.SetActive(false);
-    }
-
-    protected override void Start()
-    {
-        base.Start();
+        InitializeToggles();
     }
 
     /// <summary>
-    /// Registers hotkey bindings for ingame app toggling, helper, and quit.
+    /// Registers hotkey bindings for ingame app toggling and quit.
     /// </summary>
     public override void InitializeInputs()
     {
         AddInputCmd(
-            DeviceType.Keyboard, (uint)KeyCode.VcF2,
+            DeviceType.Keyboard, (uint)KeyCode.VcF1,
             InputState.Pressed,
             (self) =>
             {
-                ToggleApp_ScreenCanvas();
-                App_ScreenCanvas.Clear();
+                ToggleApp<ScreenCanvas>();
+                GetApp<ScreenCanvas>().Clear();
             }
+        );
+        AddInputCmd(
+            DeviceType.Keyboard, (uint)KeyCode.VcF2,
+            InputState.Pressed,
+            (self) => ToggleApp<MinimapCanvas>()
         );
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcF3,
             InputState.Pressed,
-            (self) => ToggleApp_MinimapCanvas()
+            (self) => ToggleApp<MinimapOverlay>()
         );
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcF4,
             InputState.Pressed,
-            (self) => ToggleApp_PlayersNamePanel()
-        );
-        AddInputCmd(
-            DeviceType.Keyboard, (uint)KeyCode.VcF5,
-            InputState.Pressed,
-            (self) => ToggleApp_MinimapOverlay()
-        );
-
-        AddInputCmd(
-            DeviceType.Keyboard, (uint)KeyCode.VcF8,
-            InputState.Pressed,
-            (self) =>
-            {
-                if (Helper != null)
-                    Helper.SetActive(!Helper.activeSelf);
-            }
+            (self) => ToggleApp<PlayersNamePanel>()
         );
 
         #region Exit Command
@@ -149,8 +76,10 @@ public class IngameAppController : UtilityAppBase
             (self) =>
             {
                 timer_quit += Time.deltaTime;
-                closingMatchOverlay.SetActive(true);
+
                 var fill = Mathf.Clamp01(timer_quit / timeToHoldToQuit);
+
+                closingMatchOverlay.SetActive(true);
                 closingMatchGauge.anchorMax = new Vector2(fill, 1f);
 
                 if (timer_quit >= timeToHoldToQuit)
