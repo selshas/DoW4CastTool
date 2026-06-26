@@ -416,6 +416,12 @@ public partial class FlexibleGridLayoutGroup : LayoutGroup
         if (isScaled)
             size *= child.localScale[axis];
 
+        if (isControlled && m_GridSize > 0 && axis == MainAxis)
+        {
+            var cellSpace = (rectTransform.rect.size[axis] - GetPaddingTotal(axis) - MainAxisSpacing * (m_GridSize - 1)) / m_GridSize;
+            size = Mathf.Min(size, Mathf.Max(0, cellSpace));
+        }
+
         return size;
     }
 

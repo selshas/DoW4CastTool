@@ -159,7 +159,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
   m_Padding:
-    m_Left: 10
+    m_Left: 16
     m_Right: 32
     m_Top: 8
     m_Bottom: 8
@@ -390,7 +390,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 310, y: -8}
+  m_AnchoredPosition: {x: 316, y: -8}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &4844441735076450308
@@ -451,7 +451,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2172271272691663978, guid: 9ef7fad247d64d04a8bcc7827ba88ee7, type: 3}
       propertyPath: m_fontSize
-      value: 28.75
+      value: 30.4
       objectReference: {fileID: 0}
     - target: {fileID: 2630703928211259128, guid: 9ef7fad247d64d04a8bcc7827ba88ee7, type: 3}
       propertyPath: m_AnchorMax.y
@@ -653,7 +653,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2172271272691663978, guid: 9ef7fad247d64d04a8bcc7827ba88ee7, type: 3}
       propertyPath: m_fontSize
-      value: 28.75
+      value: 30.4
       objectReference: {fileID: 0}
     - target: {fileID: 2630703928211259128, guid: 9ef7fad247d64d04a8bcc7827ba88ee7, type: 3}
       propertyPath: m_AnchorMax.y
@@ -851,7 +851,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2172271272691663978, guid: 9ef7fad247d64d04a8bcc7827ba88ee7, type: 3}
       propertyPath: m_fontSize
-      value: 28.75
+      value: 30.4
       objectReference: {fileID: 0}
     - target: {fileID: 2630703928211259128, guid: 9ef7fad247d64d04a8bcc7827ba88ee7, type: 3}
       propertyPath: m_AnchorMax.y
