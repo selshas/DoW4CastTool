@@ -1,7 +1,7 @@
 using UnityEngine;
 using static GlobalInputSystem;
 using DeviceType = GlobalInputSystem.DeviceType;
-using KeyCode = SharpHook.Native.KeyCode;
+using KeyCode = SharpHook.Data.KeyCode;
 
 public class OutgameAppController : UtilityAppBase
 {

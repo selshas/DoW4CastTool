@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>SharpHook.Reactive</id>
+    <version>7.1.2</version>
+    <authors>Tolik Pylypchuk</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>icon.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://sharphook.tolik.io/</projectUrl>
+    <description>SharpHook provides a cross-platform global keyboard and mouse hook, event simulation, and text entry simulation for .NET.</description>
+    <copyright>(c) 2021 Anatoliy Pylypchuk</copyright>
+    <tags>input keyboard mouse hook global-hook simulator libuiohook rx reactive</tags>
+    <repository type="git" url="https://github.com/TolikPylypchuk/SharpHook" commit="464cdc125dbf1ae8006aed5794a7fc19e4b96533" />
+    <dependencies>
+      <group targetFramework="net10.0">
+        <dependency id="SharpHook" version="7.1.2" exclude="Build,Analyzers" />
+        <dependency id="System.Reactive" version="6.1.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net10.0-maccatalyst26.0">
+        <dependency id="SharpHook" version="7.1.2" exclude="Build,Analyzers" />
+        <dependency id="System.Reactive" version="6.1.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETFramework4.7.2">
+        <dependency id="SharpHook" version="7.1.2" exclude="Build,Analyzers" />
+        <dependency id="System.Reactive" version="6.1.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net8.0">
+        <dependency id="SharpHook" version="7.1.2" exclude="Build,Analyzers" />
+        <dependency id="System.Reactive" version="6.1.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net9.0">
+        <dependency id="SharpHook" version="7.1.2" exclude="Build,Analyzers" />
+        <dependency id="System.Reactive" version="6.1.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net9.0-maccatalyst18.0">
+        <dependency id="SharpHook" version="7.1.2" exclude="Build,Analyzers" />
+        <dependency id="System.Reactive" version="6.1.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="SharpHook" version="7.1.2" exclude="Build,Analyzers" />
+        <dependency id="System.Reactive" version="6.1.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

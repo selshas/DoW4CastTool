@@ -3,10 +3,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-using SharpHook.Native;
+using SharpHook.Data;
 using static GlobalInputSystem;
 using DeviceType = GlobalInputSystem.DeviceType;
-using KeyCode = SharpHook.Native.KeyCode;
+using KeyCode = SharpHook.Data.KeyCode;
 
 public class MinimapCanvas : DrawableCanvas
 {

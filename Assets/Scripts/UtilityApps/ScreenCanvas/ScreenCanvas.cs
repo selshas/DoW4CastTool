@@ -1,4 +1,4 @@
-using SharpHook.Native;
+using SharpHook.Data;
 using static GlobalInputSystem;
 
 public class ScreenCanvas : DrawableCanvas

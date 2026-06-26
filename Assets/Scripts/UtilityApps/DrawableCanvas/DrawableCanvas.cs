@@ -1,4 +1,4 @@
-using SharpHook.Native;
+using SharpHook.Data;
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 using static GlobalInputSystem;
 using DeviceType = GlobalInputSystem.DeviceType;
-using KeyCode = SharpHook.Native.KeyCode;
+using KeyCode = SharpHook.Data.KeyCode;
 
 public abstract partial class DrawableCanvas : UtilityAppBase
 {

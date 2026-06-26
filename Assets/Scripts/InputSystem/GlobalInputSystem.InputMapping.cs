@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
-using SharpKey = SharpHook.Native.KeyCode;
-using SharpMouse = SharpHook.Native.MouseButton;
+using SharpKey = SharpHook.Data.KeyCode;
+using SharpMouse = SharpHook.Data.MouseButton;
 
 /// <summary>
 /// SharpHook-to-InputSystem key/mouse mapping for focused input polling.

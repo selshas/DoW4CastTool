@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using TMPro;
 using static GlobalInputSystem;
 using DeviceType = GlobalInputSystem.DeviceType;
-using KeyCode = SharpHook.Native.KeyCode;
+using KeyCode = SharpHook.Data.KeyCode;
 
 public class MatchSetup : UtilityAppBase
 {
