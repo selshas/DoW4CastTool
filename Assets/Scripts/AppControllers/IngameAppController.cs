@@ -52,11 +52,6 @@ public class IngameAppController : AppController
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcF3,
             InputState.Pressed,
-            (self) => ToggleApp<MinimapOverlay>()
-        );
-        AddInputCmd(
-            DeviceType.Keyboard, (uint)KeyCode.VcF4,
-            InputState.Pressed,
             (self) => ToggleApp<PlayersNamePanel>()
         );
 

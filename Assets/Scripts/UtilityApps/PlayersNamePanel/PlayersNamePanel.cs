@@ -56,6 +56,7 @@ public class PlayersNamePanel : UtilityAppBase
     /// <summary> Populates emblem sprites from FactionDataLoader. </summary>
     private void LoadPortraitSprites()
     {
+        return; 
         MiniPortraitSprites.Clear();
 
         foreach (var factionData in FactionDataLoader.Instance.Factions.Values)
