@@ -10,6 +10,7 @@ public class OutgameAppController : UtilityAppBase
     public GameObject Helper;
 
     public MatchSetup App_MatchSetup;
+    public KnownPlayerListManager App_KnownPlayerListManager;
 
     [SerializeField] private GameObject terminationOverlay;
     private RingGauge terminationGauge;
@@ -24,6 +25,21 @@ public class OutgameAppController : UtilityAppBase
     {
         var isActive = App_MatchSetup.gameObject.activeSelf;
         App_MatchSetup.gameObject.SetActive(!isActive);
+
+        if (!isActive)
+            App_KnownPlayerListManager.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// Toggles the KnownPlayerListManager visibility.
+    /// </summary>
+    public void ToggleApp_KnownPlayerListManager()
+    {
+        var isActive = App_KnownPlayerListManager.gameObject.activeSelf;
+        App_KnownPlayerListManager.gameObject.SetActive(!isActive);
+
+        if (!isActive)
+            App_MatchSetup.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -56,6 +72,12 @@ public class OutgameAppController : UtilityAppBase
             DeviceType.Keyboard, (uint)KeyCode.VcF1,
             InputState.Pressed,
             (self) => ToggleApp_MatchSetup()
+        );
+
+        AddInputCmd(
+            DeviceType.Keyboard, (uint)KeyCode.VcF2,
+            InputState.Pressed,
+            (self) => ToggleApp_KnownPlayerListManager()
         );
 
         AddInputCmd(

@@ -41,6 +41,18 @@ public class PlayerDataLoader : SingletonBehaviour<PlayerDataLoader>
     }
 
     /// <summary>
+    /// Removes a name from the known list and saves to disk.
+    /// </summary>
+    public bool RemoveName(string name)
+    {
+        var removed = knownNames.Remove(name);
+        if (removed)
+            Save();
+
+        return removed;
+    }
+
+    /// <summary>
     /// Adds names that don't already exist and saves the sorted list to disk.
     /// </summary>
     public void MergeNames(IEnumerable<string> names)
