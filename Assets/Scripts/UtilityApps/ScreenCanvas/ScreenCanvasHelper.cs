@@ -7,6 +7,8 @@ public class ScreenCanvasHelper : Helper
 {
     public ScreenCanvas ScreenCanvas;
 
+    public GameObject FoldableArea;
+
     public GameObject PenColorTemplete;
 
     private void Awake()
@@ -14,18 +16,20 @@ public class ScreenCanvasHelper : Helper
         var colors = ScreenCanvas.PenColors;
         var colorNames = colors.Keys.ToArray();
 
-        var parentTransform = PenColorTemplete.transform.parent;
-        for (var i = 0; i < colorNames.Length; i++)
+        var i = 0;
+        new UIItemList<string>(PenColorTemplete.transform.parent, colorNames, (child, colorName) =>
         {
-            var colorName = colorNames[i];
             var color = colors[colorName];
 
-            var intance = Instantiate(PenColorTemplete, parentTransform);
-            intance.name = $"{colorName}({i + 1})";
-            intance.GetComponent<RawImage>().color = color;
-            intance.GetComponentInChildren<TextMeshProUGUI>().text = $"{i + 1}";
-        }
+            child.name = $"{colorName}({i + 1})";
+            child.GetComponent<RawImage>().color = color;
+            child.GetComponentInChildren<TextMeshProUGUI>().text = $"{i + 1}";
+            i++;
+        });
+    }
 
-        DestroyImmediate(PenColorTemplete);
+    public void SetFolding(bool unfolded)
+    {
+        FoldableArea.SetActive(unfolded);
     }
 }
