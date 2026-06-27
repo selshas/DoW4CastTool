@@ -119,11 +119,11 @@ public class PlayerPlate : MonoBehaviour
         if (factionData == null)
             return;
 
-        if (factionData.Symbol != null)
-            image_Faction.texture = factionData.Symbol.texture;
+        if (factionData.SymbolTexture != null)
+            image_Faction.texture = factionData.SymbolTexture;
 
-        if (factionData.Heroes.TryGetValue(player.HeroName, out var heroData) && heroData.Portrait != null)
-            image_Hero.texture = heroData.Portrait.texture;
+        if (factionData.Heroes.TryGetValue(player.HeroName, out var heroData) && heroData.PortraitTexture != null)
+            image_Hero.texture = heroData.PortraitTexture;
     }
 
     /// <summary>

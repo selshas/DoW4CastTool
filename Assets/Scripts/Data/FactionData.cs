@@ -4,6 +4,6 @@ using UnityEngine;
 public class FactionData
 {
     public string Name;
-    public Sprite Symbol;
+    public Texture2D SymbolTexture;
     public Dictionary<string, HeroData> Heroes;
 }

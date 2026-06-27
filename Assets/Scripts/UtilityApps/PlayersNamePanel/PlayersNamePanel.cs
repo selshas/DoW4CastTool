@@ -61,8 +61,8 @@ public class PlayersNamePanel : UtilityAppBase
 
         foreach (var factionData in FactionDataLoader.Instance.Factions.Values)
         {
-            if (factionData.Symbol != null)
-                MiniPortraitSprites.Add(factionData.Symbol);
+            if (factionData.SymbolTexture != null)
+                MiniPortraitSprites.Add(factionData.SymbolTexture);
         }
     }
 }

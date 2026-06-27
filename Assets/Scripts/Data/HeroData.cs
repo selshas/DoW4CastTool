@@ -4,5 +4,5 @@ public class HeroData
 {
     public string Name;
     public string FactionName;
-    public Sprite Portrait;
+    public Texture2D PortraitTexture;
 }

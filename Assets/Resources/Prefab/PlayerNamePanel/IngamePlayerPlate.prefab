@@ -120,6 +120,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6537e950d135435db70551621231408a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  nameText: {fileID: 2172271272691663978}
+  scoreText: {fileID: 6882362603648100193}
+  factionSymbol: {fileID: 2991031445519747105}
+  heroPortrait: {fileID: 6527948886874326938}
 --- !u!114 &1608689544457273240
 MonoBehaviour:
   m_ObjectHideFlags: 0
