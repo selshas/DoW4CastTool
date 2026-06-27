@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5243532512073983098}
   - component: {fileID: 9168031832631385467}
   - component: {fileID: 3847291056482170953}
+  - component: {fileID: 6842093493680851024}
   m_Layer: 5
   m_Name: IngamePlayerPlate
   m_TagString: Untagged
@@ -118,7 +119,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6537e950d135435db70551621231408a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  brightness: 0.5
+--- !u!114 &6842093493680851024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 41803639663774496}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f33bcf1b8e89b84d878a10c0833070b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIGreyscaleEffector
+  dimming: 0.4
 --- !u!1 &1091667720557997673
 GameObject:
   m_ObjectHideFlags: 0
