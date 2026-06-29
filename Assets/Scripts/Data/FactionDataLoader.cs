@@ -103,9 +103,9 @@ public class FactionDataLoader : SingletonBehaviour<FactionDataLoader>
     }
 
     /// <summary> Loads an image file as a Sprite from the given directory and base name. </summary>
-    private static Texture2D LoadImage(string dirPath, string baseName, string spriteName)
+    private static Texture2D LoadImage(string dirPath, string filename, string textureName)
     {
-        var imagePath = FindImageFile(dirPath, baseName);
+        var imagePath = FindImageFile(dirPath, filename);
         if (imagePath == null)
             return null;
 
@@ -114,7 +114,7 @@ public class FactionDataLoader : SingletonBehaviour<FactionDataLoader>
         if (!tex.LoadImage(bytes))
             return null;
 
-        tex.name = spriteName;
+        tex.name = textureName;
 
         return tex;
     }

@@ -7,8 +7,13 @@ public class PlayerPlate : MonoBehaviour
 {
     [SerializeField] private RectTransform handler;
     [SerializeField] private Button button_Remove;
+
+    [SerializeField] private Toggle toggle_factionSelection;
+    [SerializeField] private Toggle toggle_heroSelection;
+
     [SerializeField] private RawImage image_Faction;
     [SerializeField] private RawImage image_Hero;
+
     [SerializeField] private TMP_InputField inputField_PlayerName;
 
     private static readonly Vector3[] cornerBuffer = new Vector3[4];
@@ -37,7 +42,32 @@ public class PlayerPlate : MonoBehaviour
         if (canvasGroup == null)
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
-        button_Remove.onClick.AddListener(OnRemoveClicked);
+        toggle_factionSelection.onValueChanged.AddListener((isOn) => 
+        {
+            if (isOn)
+            {
+                var playerData = MatchDataManager.Instance.Players[playerIndex];
+                FactionSelector.Instance.Open(playerData, toggle_factionSelection);
+            }
+            else
+            {
+                FactionSelector.Instance.Close();
+            }
+        });
+        toggle_heroSelection.onValueChanged.AddListener((isOn) =>
+        {
+            if (isOn)
+            {
+                var playerData = MatchDataManager.Instance.Players[playerIndex];
+                HeroSelector.Instance.Open(playerData, toggle_heroSelection);
+            }
+            else
+            {
+                HeroSelector.Instance.Close();
+            }
+        });
+
+        button_Remove.onClick.AddListener(Remove);
         inputField_PlayerName.onValueChanged.AddListener(OnPlayerNameChanged);
     }
 
@@ -75,9 +105,7 @@ public class PlayerPlate : MonoBehaviour
         var inputRect = inputField_PlayerName.GetComponent<RectTransform>();
 
         inputRect.GetWorldCorners(cornerBuffer);
-        var bottomCenter = (cornerBuffer[0] + cornerBuffer[3]) * 0.5f;
-
-        listRect.position = new Vector3(bottomCenter.x, bottomCenter.y, 0f);
+        listRect.position = new Vector3(cornerBuffer[0].x, cornerBuffer[0].y, 0f);
         listRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, inputRect.rect.width);
 
         autoCompletionList.Refresh(keyword);
@@ -103,18 +131,12 @@ public class PlayerPlate : MonoBehaviour
     }
 
     /// <summary>
-    /// Assigns the player index this plate represents.
-    /// </summary>
-    public void SetPlayerIndex(int index)
-    {
-        playerIndex = index;
-    }
-
-    /// <summary>
     /// Sets the faction symbol and hero portrait from the player's data.
     /// </summary>
     public void ApplyPlayerData(MatchPlayer player)
     {
+        playerIndex = player.PlayerIndex;
+
         var factionData = FactionDataLoader.Instance.GetByName(player.FactionName);
         if (factionData == null)
             return;
@@ -126,20 +148,9 @@ public class PlayerPlate : MonoBehaviour
             image_Hero.texture = heroData.PortraitTexture;
     }
 
-    /// <summary>
-    /// Removes the player from data and destroys this plate.
-    /// </summary>
-    private void OnRemoveClicked()
+    private void Remove()
     {
-        Debug.Log($"[{nameof(PlayerPlate)}] OnRemoveClicked: Removing Player {playerIndex}.");
-
-        if (playerIndex >= 0)
-            MatchDataManager.Instance.RemovePlayer(playerIndex);
-
-        if (originSlot != null)
-            originSlot.ClearPlate();
-
-        Destroy(gameObject);
+        MatchSetup.Instance.RemovePlayerFromSlot(originSlot);
     }
 
     /// <summary>

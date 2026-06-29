@@ -43,6 +43,15 @@ public class MatchDataManager : SingletonBehaviour<MatchDataManager>
             }
         },
         {
+            MatchMode.FourOnFour, new MatchConfig
+            {
+                Mode = MatchMode.FourOnFour,
+                Label = "4v4",
+                TeamCount = 2,
+                TeamSize = 4,
+            }
+        },
+        {
             MatchMode.FreeForAll, new MatchConfig
             {
                 Mode = MatchMode.FreeForAll,

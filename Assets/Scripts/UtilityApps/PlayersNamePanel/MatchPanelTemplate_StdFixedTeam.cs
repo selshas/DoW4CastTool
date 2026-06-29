@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class MatchPanelTemplate_NvN : MatchPanelTemplate
 {
     public override void LoadTeamData()

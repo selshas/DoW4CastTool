@@ -1,7 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UIItemList<T>
+public class UIItemList<T> : IEnumerable<GameObject>
 {
     public delegate void BindHandler(Transform instance, T item);
 
@@ -134,5 +135,15 @@ public class UIItemList<T>
         }
 
         instances.Clear();
+    }
+
+    public IEnumerator<GameObject> GetEnumerator()
+    {
+        return instances.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return instances.GetEnumerator();
     }
 }

@@ -9,8 +9,6 @@ using UnityEngine.UI;
 /// </summary>
 public class ApplicationSetup : SingletonBehaviour<ApplicationSetup>
 {
-    public static bool RaycastDetected = false;
-
     public static bool InteractionMode
     {
         get => _interactionMode;
@@ -37,9 +35,6 @@ public class ApplicationSetup : SingletonBehaviour<ApplicationSetup>
     public static IntPtr hWnd { get; private set; }
 
     public static System.Diagnostics.Process proc { get; private set; }
-
-    private GraphicRaycaster raycaster;
-    public static List<RaycastResult> RaycastResults = new List<RaycastResult>();
 
     public bool IsLoaded { get; private set; } = false;
     public List<UtilityAppBase> UtilityApps = new List<UtilityAppBase>();
@@ -106,14 +101,6 @@ public class ApplicationSetup : SingletonBehaviour<ApplicationSetup>
         if (!InteractionMode)
             return;
 
-        if (raycaster == null)
-        {
-            var canvas = FindAnyObjectByType<Canvas>();
-            if (canvas == null)
-                return;
-
-            raycaster = canvas.GetComponent<GraphicRaycaster>();
-        }
 
         Cursor.lockState = (Application.isFocused)
             ? CursorLockMode.Confined
@@ -122,18 +109,9 @@ public class ApplicationSetup : SingletonBehaviour<ApplicationSetup>
         var ped = new PointerEventData(null);
         ped.position = GetCursorViewportPosition();
 
-
-        raycaster.Raycast(ped, RaycastResults);
-
-        if (RaycastResults.Count > 0 || RaycastDetected)
-        {
+        if (UIRaycastTracker.Instance.ResultCount > 0)
             SetClickThrough(false);
-        }
         else
-        {
             SetClickThrough(true);
-        }
-        RaycastResults.Clear();
-
     }
 }

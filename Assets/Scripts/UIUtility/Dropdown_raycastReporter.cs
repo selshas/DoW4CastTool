@@ -21,7 +21,7 @@ public class Dropdown_raycastReporter : MonoBehaviour
             PointerEventData ped = new PointerEventData(null);
             ped.position = Mouse.current.position.ReadValue();
 
-            dropDownList.GetComponent<GraphicRaycaster>().Raycast(ped, ApplicationSetup.RaycastResults);
+            dropDownList.GetComponent<GraphicRaycaster>().Raycast(ped, UIRaycastTracker.Instance.Results);
         }
     }
 }

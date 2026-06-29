@@ -168,7 +168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bd4f02426357a84c9c888ad0e1039af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  prefab_PlayerPlate: {fileID: 5158293096222315087, guid: c719054f0d136d241836605908025812, type: 3}
+  AttachedPlate: {fileID: 0}
 --- !u!1 &5960840051815523812
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,7 +257,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bd4f02426357a84c9c888ad0e1039af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  prefab_PlayerPlate: {fileID: 5158293096222315087, guid: c719054f0d136d241836605908025812, type: 3}
+  AttachedPlate: {fileID: 0}
 --- !u!1 &6917464969371759428
 GameObject:
   m_ObjectHideFlags: 0
@@ -602,4 +602,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bd4f02426357a84c9c888ad0e1039af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  prefab_PlayerPlate: {fileID: 5158293096222315087, guid: c719054f0d136d241836605908025812, type: 3}
+  AttachedPlate: {fileID: 0}

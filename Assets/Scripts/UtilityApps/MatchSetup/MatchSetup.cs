@@ -4,7 +4,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+
 using static GlobalInputSystem;
+
 using DeviceType = GlobalInputSystem.DeviceType;
 using KeyCode = SharpHook.Data.KeyCode;
 
@@ -12,21 +14,14 @@ public class MatchSetup : UtilityAppBase
 {
     public static MatchSetup Instance { get; private set; }
 
-    private static readonly Color[] TEAM_COLORS = {
-        new Color(0.9f, 0.2f, 0.2f),
-        new Color(0.2f, 0.4f, 0.9f),
-        new Color(0.2f, 0.8f, 0.2f),
-        new Color(0.9f, 0.85f, 0.1f),
-    };
-
-    private static readonly string[] TEAM_DEFAULT_NAMES = { "Red", "Blue", "Green", "Yellow" };
-
     private static readonly MatchMode[] MODE_ORDER = 
     {
-        MatchMode.OneOnOne, MatchMode.TwoOnTwo, MatchMode.ThreeOnThree, MatchMode.FreeForAll
+        MatchMode.OneOnOne, 
+        MatchMode.TwoOnTwo, 
+        MatchMode.ThreeOnThree, 
+        MatchMode.FourOnFour,
+        MatchMode.FreeForAll,
     };
-
-    private const int TEAMS_PER_ROW = 2;
 
 
     [SerializeField] public RectTransform MatchModeSelector;
@@ -43,6 +38,8 @@ public class MatchSetup : UtilityAppBase
     [SerializeField] private Button button_StartMatch;
 
     private List<MapData> filteredMaps = new List<MapData>();
+
+    private List<PlayerPlate> playerPlates = new List<PlayerPlate>();
 
     private void Awake()
     {
@@ -115,6 +112,7 @@ public class MatchSetup : UtilityAppBase
         var config = MatchDataManager.MATCH_CONFIGS[MatchDataManager.Instance.CurrentMatchMode];
         var teamSize = config.TeamSize;
 
+        playerPlates.Clear();
 
         var teams = MatchDataManager.Instance.Teams;
         var uiItemList = new UIItemList<MatchTeam>(TeamListContainer, teams, (child, data) =>
@@ -246,19 +244,23 @@ public class MatchSetup : UtilityAppBase
     /// <summary>
     /// Instantiates a PlayerPlate and attaches it to the slot. Creates a new player if no playerIndex is given.
     /// </summary>
-    public void CreatePlayerPlate(PlayerSlot slot, int playerIndex = -1)
+    public PlayerPlate CreatePlayerPlate(PlayerSlot playerSlot, int playerIndex = -1)
     {
         if (playerIndex < 0)
-            playerIndex = MatchDataManager.Instance.AddPlayerToTeam(slot.TeamIndex);
+            playerIndex = MatchDataManager.Instance.AddPlayerToTeam(playerSlot.TeamIndex);
 
-        var plateObject = Instantiate(prefab_PlayerPlate, slot.transform);
+        var plateObject = Instantiate(prefab_PlayerPlate, playerSlot.transform);
         var plate = plateObject.GetComponent<PlayerPlate>();
 
-        plate.SetPlayerIndex(playerIndex);
-        plate.ApplyPlayerData(MatchDataManager.Instance.Players[playerIndex]);
-        slot.AttachPlate(plate);
+        var playerData = MatchDataManager.Instance.Players[playerIndex];
+        
+        plate.ApplyPlayerData(playerData);
+        playerSlot.AttachPlate(plate);
+        playerPlates.Add(plate);
+        
+        Debug.Log($"[{nameof(MatchSetup)}] CreatePlayerPlate: Player {playerIndex} attached to Team {playerSlot.TeamIndex}.");
 
-        Debug.Log($"[{nameof(MatchSetup)}] CreatePlayerPlate: Player {playerIndex} attached to Team {slot.TeamIndex}.");
+        return plate;
     }
 
     #endregion
@@ -269,21 +271,48 @@ public class MatchSetup : UtilityAppBase
             Instance = null;
     }
 
-    private void ClearChildren(Transform parent)
+    public void ChangeFaction(int playerIndex, string factionName)
     {
-        for (var i = parent.childCount - 1; i >= 0; i--)
-            Destroy(parent.GetChild(i).gameObject);
+        var playerData = MatchDataManager.Instance.Players[playerIndex];
+        if (!FactionDataLoader.Instance.Factions.TryGetValue(factionName, out var factionData))
+            return;
+
+        var plate = playerPlates.Find(x => x.PlayerIndex == playerIndex);
+        if (plate == null)
+            return;
+
+        playerData.FactionName = factionName;
+        playerData.HeroName = FactionDataLoader.Instance.GetRandomHeroName(factionName);
+        plate.ApplyPlayerData(playerData);
     }
 
-    private void AddClickHandler(GameObject target, UnityEngine.Events.UnityAction action)
+    public void ChangeHero(int playerIndex, string heroName)
     {
-        var button = target.GetComponent<Button>();
-        if (button == null)
-        {
-            button = target.AddComponent<Button>();
-            button.transition = Selectable.Transition.None;
-        }
+        var playerData = MatchDataManager.Instance.Players[playerIndex];
+        if (!FactionDataLoader.Instance.Factions.TryGetValue(playerData.FactionName, out var factionData) 
+            || !factionData.Heroes.TryGetValue(heroName, out var heroData)
+        )
+            return;
 
-        button.onClick.AddListener(action);
+        var plate = playerPlates.Find(x => x.PlayerIndex == playerIndex);
+        if (plate == null)
+            return;
+
+        playerData.HeroName = heroName;
+        plate.ApplyPlayerData(playerData);
     }
+
+
+    /// <summary>
+    /// Removes the player from data and destroys this plate.
+    /// </summary>
+    public void RemovePlayerFromSlot(PlayerSlot playerSlot)
+    {
+        if (playerSlot.CurrentPlayerIndex >= 0)
+            MatchDataManager.Instance.RemovePlayer(playerSlot.CurrentPlayerIndex);
+
+        playerPlates.Remove(playerSlot.AttachedPlate);
+        playerSlot.ClearPlate();
+    }
+
 }
