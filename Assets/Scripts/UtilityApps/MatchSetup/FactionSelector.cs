@@ -2,7 +2,6 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 [RequireComponent(typeof(ToggleGroup))]
 public class FactionSelector : PickSelector<FactionData>
