@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class PlayerPlate : MonoBehaviour
 {
-    [SerializeField] private RectTransform handler;
     [SerializeField] private Button button_Remove;
 
     [SerializeField] private Toggle toggle_factionSelection;
