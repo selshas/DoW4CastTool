@@ -52,7 +52,7 @@ public class IngameAppController : AppController
         AddInputCmd(
             DeviceType.Keyboard, (uint)KeyCode.VcF3,
             InputState.Pressed,
-            (self) => ToggleApp<PlayersNamePanel>()
+            (self) => ToggleApp<MatchPanel>()
         );
 
         #region Exit Command

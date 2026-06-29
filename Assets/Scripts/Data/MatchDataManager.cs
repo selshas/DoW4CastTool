@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class MatchDataManager : SingletonBehaviour<MatchDataManager>
+public class MatchDataManager : GlobalSingletonBehaviour<MatchDataManager>
 {
     public MatchMode CurrentMatchMode;
     public MapData CurrentMap;

@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using SharpHook;
 using System.Linq;
 
-public partial class GlobalInputSystem : SingletonBehaviour<GlobalInputSystem>
+public partial class GlobalInputSystem : GlobalSingletonBehaviour<GlobalInputSystem>
 {
     public Dictionary<DeviceType, Dictionary<uint, InputState>> InputStates = new Dictionary<DeviceType, Dictionary<uint, InputState>>();
     public Dictionary<DeviceType, Dictionary<uint, InputState>> InputStates_prev = new Dictionary<DeviceType, Dictionary<uint, InputState>>();

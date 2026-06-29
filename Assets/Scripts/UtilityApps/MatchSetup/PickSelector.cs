@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(ToggleGroup))]
-public abstract class PickSelector<T> : SceneBehaviour<PickSelector<T>>
+public abstract class PickSelector<T> : SingletonBehaviour<PickSelector<T>>
 {
     protected Toggle toggle_openner;
     protected MatchPlayer playerData;

@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 /// Tracks which UI elements are under the cursor each frame via EventSystem raycast.
 /// </summary>
 [DefaultExecutionOrder(-100)]
-public class UIRaycastTracker : SingletonBehaviour<UIRaycastTracker>
+public class UIRaycastTracker : GlobalSingletonBehaviour<UIRaycastTracker>
 {
     public readonly List<RaycastResult> Results = new List<RaycastResult>();
 

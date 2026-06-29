@@ -7,7 +7,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Set environmental condition when the application has been started.
 /// </summary>
-public class ApplicationSetup : SingletonBehaviour<ApplicationSetup>
+public class ApplicationSetup : GlobalSingletonBehaviour<ApplicationSetup>
 {
     public static bool InteractionMode
     {

@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class TooltipManager : SceneBehaviour<TooltipManager>
+public class TooltipManager : SingletonBehaviour<TooltipManager>
 {
     public float DampenerIncrement = 1.0f;
     public float DampenerReleasing = 2.0f;

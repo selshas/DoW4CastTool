@@ -1,12 +1,12 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class PlayersNamePanel : UtilityAppBase
+public class MatchPanel : UtilityAppBase
 {
     public List<MatchPanelTemplate> templates = new List<MatchPanelTemplate>();
 
     /// <summary>
-    /// No hotkey bindings for PlayersNamePanel.
+    /// No hotkey bindings for MatchPanel.
     /// </summary>
     public override void InitializeInputs() { }
 
