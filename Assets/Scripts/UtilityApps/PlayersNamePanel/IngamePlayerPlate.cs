@@ -39,7 +39,7 @@ public class IngamePlayerPlate : MonoBehaviour, IPointerClickHandler
         nameText.text = playerData.Name;
 
         var factionData = FactionDataLoader.Instance.GetByName(playerData.FactionName);
-        if (factionData == null || factionData.Heroes.TryGetValue(playerData.HeroName, out var heroData))
+        if (factionData == null || !factionData.Heroes.TryGetValue(playerData.HeroName, out var heroData))
         {
             factionSymbol.texture = FactionDataLoader.Instance.FactionSymbolPlaceholderTexture;
             heroPortrait.texture = FactionDataLoader.Instance.HeroPortraitPlaceholderTexture;
