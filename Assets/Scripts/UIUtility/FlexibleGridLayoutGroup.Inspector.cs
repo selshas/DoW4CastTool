@@ -16,7 +16,8 @@ public partial class FlexibleGridLayoutGroup
         private SerializedProperty m_RowSpacing;
         private SerializedProperty m_ColumnSpacing;
 
-        private SerializedProperty m_ReverseArrangement;
+        private SerializedProperty m_ReverseMainAxis;
+        private SerializedProperty m_ReverseCrossAxis;
 
         private SerializedProperty m_ChildControlWidth;
         private SerializedProperty m_ChildControlHeight;
@@ -38,7 +39,8 @@ public partial class FlexibleGridLayoutGroup
             m_RowSpacing = serializedObject.FindProperty("m_RowSpacing");
             m_ColumnSpacing = serializedObject.FindProperty("m_ColumnSpacing");
 
-            m_ReverseArrangement = serializedObject.FindProperty("m_ReverseArrangement");
+            m_ReverseMainAxis = serializedObject.FindProperty("m_ReverseMainAxis");
+            m_ReverseCrossAxis = serializedObject.FindProperty("m_ReverseCrossAxis");
 
             m_ChildControlWidth = serializedObject.FindProperty("m_ChildControlWidth");
             m_ChildControlHeight = serializedObject.FindProperty("m_ChildControlHeight");
@@ -63,7 +65,7 @@ public partial class FlexibleGridLayoutGroup
             EditorGUILayout.PropertyField(m_RowSpacing);
             EditorGUILayout.PropertyField(m_ColumnSpacing);
 
-            EditorGUILayout.PropertyField(m_ReverseArrangement);
+            DrawInlineTogglePair("Reverse Arrangement", m_ReverseMainAxis, m_ReverseCrossAxis, "Main Axis", "Cross Axis");
 
             DrawInlineTogglePair("Control Child Size", m_ChildControlWidth, m_ChildControlHeight);
             DrawInlineTogglePair("Use Child Scale", m_ChildScaleWidth, m_ChildScaleHeight);
@@ -72,7 +74,7 @@ public partial class FlexibleGridLayoutGroup
             serializedObject.ApplyModifiedProperties();
         }
 
-        private void DrawInlineTogglePair(string label, SerializedProperty widthProperty, SerializedProperty heightProperty)
+        private void DrawInlineTogglePair(string label, SerializedProperty firstProperty, SerializedProperty secondProperty, string firstLabel = "Width", string secondLabel = "Height")
         {
             var totalRect = EditorGUILayout.GetControlRect();
             var fieldRect = EditorGUI.PrefixLabel(totalRect, new GUIContent(label));
@@ -84,11 +86,11 @@ public partial class FlexibleGridLayoutGroup
             EditorGUI.indentLevel = 0;
 
             var halfWidth = fieldRect.width * 0.5f;
-            var widthToggleRect = new Rect(fieldRect.x, fieldRect.y, halfWidth, fieldRect.height);
-            var heightToggleRect = new Rect(fieldRect.x + halfWidth, fieldRect.y, halfWidth, fieldRect.height);
+            var firstToggleRect = new Rect(fieldRect.x, fieldRect.y, halfWidth, fieldRect.height);
+            var secondToggleRect = new Rect(fieldRect.x + halfWidth, fieldRect.y, halfWidth, fieldRect.height);
 
-            EditorGUI.PropertyField(widthToggleRect, widthProperty, new GUIContent("Width"));
-            EditorGUI.PropertyField(heightToggleRect, heightProperty, new GUIContent("Height"));
+            EditorGUI.PropertyField(firstToggleRect, firstProperty, new GUIContent(firstLabel));
+            EditorGUI.PropertyField(secondToggleRect, secondProperty, new GUIContent(secondLabel));
 
             EditorGUIUtility.labelWidth = savedLabelWidth;
             EditorGUI.indentLevel = savedIndentLevel;
