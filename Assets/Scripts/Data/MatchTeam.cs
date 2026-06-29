@@ -10,4 +10,21 @@ public class MatchTeam
     public readonly List<int> PlayerIndices = new List<int>();
 
     public int PlayerCount => PlayerIndices.Count;
+
+    public MatchPlayer[] Players 
+    {
+        get
+        {
+            var result = new MatchPlayer[PlayerIndices.Count];
+            for (var i = 0; i < PlayerIndices.Count; i++)
+            {
+                var playerIndex = PlayerIndices[i];
+                var playerData = MatchDataManager.Instance.Players[playerIndex];
+
+                result[i] = playerData;
+            }
+
+            return result;
+        }
+    }
 }
