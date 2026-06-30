@@ -1,7 +1,7 @@
 public class MatchPlayer
 {
-    public int PlayerIndex;
-    public int TeamIndex;
+    public int PlayerId;
+    public int TeamId;
     
     public string Name;
 

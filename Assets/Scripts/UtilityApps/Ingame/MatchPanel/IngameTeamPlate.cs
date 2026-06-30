@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class IngameTeamPlate : MonoBehaviour
 {
-    public int TeamIndex
+    public int TeamId
     {
-        get => teamIndex;
-        set => LoadTeamData(MatchDataManager.Instance.Teams[value]);
+        get => teamId;
+        set => LoadTeamData(MatchDataManager.Instance.GetTeamData(value));
     }
-    private int teamIndex;
+    private int teamId;
 
     private MatchTeam teamData;
 
@@ -30,7 +30,7 @@ public class IngameTeamPlate : MonoBehaviour
     {
         this.teamData = teamData;
 
-        new UIItemList<MatchPlayer>(playerContainer, teamData.Players, (child, data) => 
+        new UIItemList<MatchPlayer>(playerContainer, teamData.Players, (child, data, i) => 
         {
             var playerPlate = child.GetComponent<IngamePlayerPlate>();
             playerPlate.LoadPlayerData(data);

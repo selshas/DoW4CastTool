@@ -19,6 +19,8 @@ using UnityEngine;
 //     minimap.png
 //     matchmode_whitelist.txt  →  1v1
 //     maxplayercount.txt          →  2
+
+[DefaultExecutionOrder(-300)]
 public static class MapDataLoader
 {
     public static List<MapData> Maps { get; private set; } = new List<MapData>();

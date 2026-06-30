@@ -5,12 +5,12 @@ using UnityEngine.UI;
 
 public class IngamePlayerPlate : MonoBehaviour, IPointerClickHandler
 {
-    public int PlayerIndex 
+    public int PlayerId 
     {
-        get => playerIndex;
-        set => LoadPlayerData(MatchDataManager.Instance.Players[value]);
+        get => playerId;
+        set => LoadPlayerData(MatchDataManager.Instance.GetPlayerData(playerId));
     }
-    private int playerIndex;
+    private int playerId;
 
     private MatchPlayer playerData;
 
@@ -34,7 +34,7 @@ public class IngamePlayerPlate : MonoBehaviour, IPointerClickHandler
     public void LoadPlayerData(MatchPlayer playerData)
     {
         this.playerData = playerData;
-        playerIndex = playerData.PlayerIndex;
+        playerId = playerData.PlayerId;
 
         nameText.text = playerData.Name;
 

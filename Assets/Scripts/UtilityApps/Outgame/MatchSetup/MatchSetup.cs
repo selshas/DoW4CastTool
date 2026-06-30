@@ -39,7 +39,7 @@ public class MatchSetup : UtilityAppBase
 
     private List<MapData> filteredMaps = new List<MapData>();
 
-    private List<PlayerPlate> playerPlates = new List<PlayerPlate>();
+    private List<TeamPlate> teamPlates = new List<TeamPlate>();
 
     private void Awake()
     {
@@ -75,6 +75,7 @@ public class MatchSetup : UtilityAppBase
         );
     }
 
+
     #region Mode Selection
 
     private void InitializeMatchModeSelector()
@@ -83,7 +84,7 @@ public class MatchSetup : UtilityAppBase
 
         var toggleGroup = MatchModeSelector.GetComponent<ToggleGroup>();
         var items = MODE_ORDER.Select(x => MatchDataManager.MATCH_CONFIGS[x]).ToArray();
-        var uiItemList = new UIItemList<MatchConfig>(MatchModeSelector, items, (child, data) =>
+        var uiItemList = new UIItemList<MatchConfig>(MatchModeSelector, items, (child, data, i) =>
         {
             var label = child.Find("Label").GetComponent<TextMeshProUGUI>();
             var toggle = child.GetComponentInChildren<Toggle>();
@@ -107,37 +108,21 @@ public class MatchSetup : UtilityAppBase
 
     private void RebuildTeamList()
     {
-        Debug.Log($"[{nameof(MatchSetup)}] Rebuild TeamList.");
-
         var config = MatchDataManager.MATCH_CONFIGS[MatchDataManager.Instance.CurrentMatchMode];
         var teamSize = config.TeamSize;
 
-        playerPlates.Clear();
+        teamPlates.Clear();
 
-        var teams = MatchDataManager.Instance.Teams;
-        var uiItemList = new UIItemList<MatchTeam>(TeamListContainer, teams, (child, data) =>
+        var teamDatas = MatchDataManager.Instance.GetTeamDatas().ToArray();
+        var uiItemList = new UIItemList<MatchTeam>(TeamListContainer, teamDatas, (child, data, i) =>
         {
-            var currentTeamIndex = teams.IndexOf(data);
-            var team = teams[currentTeamIndex];
+            var teamId = data.TeamId;
+            var teamData = teamDatas[teamId];
 
-            Debug.Log($"[{nameof(MatchSetup)}] RebuildTeamList: Binding Team {currentTeamIndex}, TeamSize={teamSize}, Players={team.PlayerIndices.Count}.");
+            var teamPlate = child.GetComponentInChildren<TeamPlate>();
+            teamPlates.Add(teamPlate);
 
-            var playerSlotsContainer = child.Find("PlayerSlots");
-
-            for (var i = 0; i < playerSlotsContainer.childCount; i++)
-            {
-                var slot = playerSlotsContainer.GetChild(i);
-                slot.gameObject.SetActive(i < teamSize);
-
-                var playerSlot = slot.GetComponent<PlayerSlot>();
-                if (playerSlot == null)
-                    continue;
-
-                playerSlot.SetTeamIndex(currentTeamIndex);
-
-                if (i < team.PlayerIndices.Count)
-                    CreatePlayerPlate(playerSlot, team.PlayerIndices[i]);
-            }
+            teamPlate.SetTeamId(teamId);
         });
 
         for (var i = 0; i < uiItemList.Count; i++)
@@ -147,6 +132,7 @@ public class MatchSetup : UtilityAppBase
     }
 
     #endregion
+
 
     #region Map Selection
 
@@ -207,6 +193,7 @@ public class MatchSetup : UtilityAppBase
 
     #endregion
 
+
     /// <summary>
     /// Validates match data, persists player names, and loads the IngameOverlay scene.
     /// </summary>
@@ -219,51 +206,133 @@ public class MatchSetup : UtilityAppBase
             return;
         }
 
-        var playerNames = MatchDataManager.Instance.Teams
-            .SelectMany(t => t.PlayerIndices)
-            .Select(i => MatchDataManager.Instance.Players[i].Name);
+        // Remove all empty slots from all teams.
+        var teamDatas = MatchDataManager.Instance.GetTeamDatas();
+        foreach (var teamId in teamDatas.Select(x => x.TeamId))
+            MatchDataManager.Instance.RemoveEmptyPlayerSlots(teamId);
+
+        var playerNames = teamDatas
+            .SelectMany(x => x.PlayerIds)
+            .Select(x => MatchDataManager.Instance.GetPlayerData(x).Name);
 
         PlayerDataLoader.Instance.MergeNames(playerNames);
 
         SceneManager.LoadScene(SceneNames.IngameOverlay);
     }
 
-    #region Match Mode
-
+    /// <summary>
+    /// Configure current match setup to given <see cref="MatchMode"/>
+    /// </summary>
     private void ApplyMatchMode(MatchMode mode)
     {
         MatchDataManager.Instance.ApplyMatchMode(mode);
 
-        RefreshMapDropdown();
         RebuildTeamList();
+        RefreshMapDropdown();
     }
 
-    #endregion
+    /// <summary>
+    /// Add a player to the team
+    /// </summary>
+    public int AddPlayer(int teamId, bool preventRefresh = true)
+    {
+        var playerId = MatchDataManager.Instance.AddPlayerToTeam(teamId);
+        var teamPlate = teamPlates.Find(x => x.TeamId == teamId);
+        var emptySlot = teamPlate.PlayerSlots.Find(x => !x.HasPlate);
+        
+        CreatePlayerPlate(emptySlot, playerId);
+        if (!preventRefresh)
+        {
+            RefreshMapDropdown();
+        }
+
+        return playerId;
+    }
+
+    public void RemovePlayer(int playerId, bool preventRefresh = true)
+    {
+        var playerData = MatchDataManager.Instance.GetPlayerData(playerId);
+        var playerPlate = FindPlayerPlate(playerId);
+        playerPlate.OriginSlot.Clear();
+
+        MatchDataManager.Instance.RemovePlayer(playerId);
+
+        if (!preventRefresh)
+        {
+            RefreshMapDropdown();
+        }
+    }
 
     #region Player Plate
 
     /// <summary>
-    /// Instantiates a PlayerPlate and attaches it to the slot. Creates a new player if no playerIndex is given.
+    /// Instantiates a PlayerPlate and attaches it to the slot. Creates a new player if no playerId is given.
     /// </summary>
-    public PlayerPlate CreatePlayerPlate(PlayerSlot playerSlot, int playerIndex = -1)
+    public PlayerPlate CreatePlayerPlate(PlayerSlot playerSlot, int playerId = -1)
     {
-        if (playerIndex < 0)
-            playerIndex = MatchDataManager.Instance.AddPlayerToTeam(playerSlot.TeamIndex);
+        if (playerId < 0)
+            playerId = MatchDataManager.Instance.AddPlayerToTeam(playerSlot.TeamId);
+
+        var playerData = MatchDataManager.Instance.GetPlayerData(playerId);
 
         var plateObject = Instantiate(prefab_PlayerPlate, playerSlot.transform);
-        var plate = plateObject.GetComponent<PlayerPlate>();
+        var playerPlate = plateObject.GetComponent<PlayerPlate>();
+        playerPlate.ApplyPlayerData(playerData);
 
-        var playerData = MatchDataManager.Instance.Players[playerIndex];
-        
-        plate.ApplyPlayerData(playerData);
-        playerSlot.AttachPlate(plate);
-        playerPlates.Add(plate);
+        playerSlot.AttachPlate(playerPlate);
 
         RefreshMapDropdown();
 
-        Debug.Log($"[{nameof(MatchSetup)}] CreatePlayerPlate: Player {playerIndex} attached to Team {playerSlot.TeamIndex}.");
+        return playerPlate;
+    }
 
-        return plate;
+    public PlayerPlate FindPlayerPlate(int playerId)
+    {
+        var playerData = MatchDataManager.Instance.GetPlayerData(playerId);
+
+        var teamId = playerData.TeamId;
+        var teamPlate = teamPlates.Find(x => x.TeamId == teamId);
+        if (teamPlate == null)
+            return null;
+
+        var playerPlate = teamPlate.PlayerSlots.Where(x => x.HasPlate).First(x => x.CurrentPlayerId == playerId)?.AttachedPlate;
+        if (playerPlate == null)
+            return null;
+
+        return playerPlate;
+    }
+
+    public void ChangeFaction(int playerId, string factionName)
+    {
+        var playerData = MatchDataManager.Instance.GetPlayerData(playerId);
+        var playerPlate = FindPlayerPlate(playerId);
+        if (playerPlate == null)
+            return;
+
+        if (!FactionDataLoader.Instance.Factions.TryGetValue(factionName, out var factionData))
+            return;
+
+        playerData.FactionName = factionName;
+        playerData.HeroName = FactionDataLoader.Instance.GetRandomHeroName(factionName);
+
+        playerPlate.ApplyPlayerData(playerData);
+    }
+
+    public void ChangeHero(int playerId, string heroName)
+    {
+        var playerData = MatchDataManager.Instance.GetPlayerData(playerId);
+        var playerPlate = FindPlayerPlate(playerId);
+        if (playerPlate == null)
+            return;
+
+        if (!FactionDataLoader.Instance.Factions.TryGetValue(playerData.FactionName, out var factionData))
+            return;
+        if (!factionData.Heroes.TryGetValue(heroName, out var heroData))
+            return;
+
+        playerData.HeroName = heroName;
+
+        playerPlate.ApplyPlayerData(playerData);
     }
 
     #endregion
@@ -272,52 +341,6 @@ public class MatchSetup : UtilityAppBase
     {
         if (Instance == this)
             Instance = null;
-    }
-
-    public void ChangeFaction(int playerIndex, string factionName)
-    {
-        var playerData = MatchDataManager.Instance.Players[playerIndex];
-        if (!FactionDataLoader.Instance.Factions.TryGetValue(factionName, out var factionData))
-            return;
-
-        var plate = playerPlates.Find(x => x.PlayerIndex == playerIndex);
-        if (plate == null)
-            return;
-
-        playerData.FactionName = factionName;
-        playerData.HeroName = FactionDataLoader.Instance.GetRandomHeroName(factionName);
-        plate.ApplyPlayerData(playerData);
-    }
-
-    public void ChangeHero(int playerIndex, string heroName)
-    {
-        var playerData = MatchDataManager.Instance.Players[playerIndex];
-        if (!FactionDataLoader.Instance.Factions.TryGetValue(playerData.FactionName, out var factionData) 
-            || !factionData.Heroes.TryGetValue(heroName, out var heroData)
-        )
-            return;
-
-        var plate = playerPlates.Find(x => x.PlayerIndex == playerIndex);
-        if (plate == null)
-            return;
-
-        playerData.HeroName = heroName;
-        plate.ApplyPlayerData(playerData);
-    }
-
-
-    /// <summary>
-    /// Removes the player from data and destroys this plate.
-    /// </summary>
-    public void RemovePlayerFromSlot(PlayerSlot playerSlot)
-    {
-        if (playerSlot.CurrentPlayerIndex >= 0)
-            MatchDataManager.Instance.RemovePlayer(playerSlot.CurrentPlayerIndex);
-
-        playerPlates.Remove(playerSlot.AttachedPlate);
-        playerSlot.ClearPlate();
-
-        RefreshMapDropdown();
     }
 
 }

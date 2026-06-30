@@ -84,7 +84,7 @@ public class KnownPlayerListManager : UtilityAppBase
     /// <summary>
     /// Binds a single list item with the player name label and delete button.
     /// </summary>
-    private void BindItem(Transform child, string name)
+    private void BindItem(Transform child, string name, int index)
     {
         var label = child.GetComponentInChildren<TextMeshProUGUI>(includeInactive: true);
         label.text = name;

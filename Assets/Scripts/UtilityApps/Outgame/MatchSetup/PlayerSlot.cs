@@ -6,13 +6,13 @@ public class PlayerSlot : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
 {
     public PlayerPlate AttachedPlate;
     private RectTransform rectTransform;
-    private int teamIndex;
+    private int teamId;
 
     /// <summary>
     /// Get currently attached playet's index 
     /// </summary>
-    public int CurrentPlayerIndex
-        => AttachedPlate.PlayerIndex;
+    public int CurrentPlayerId
+        => AttachedPlate.PlayerId;
     
     /// <summary>
     /// Returns whether this slot has an attached PlayerPlate.
@@ -22,7 +22,7 @@ public class PlayerSlot : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     /// <summary>
     /// Returns the team index this slot belongs to.
     /// </summary>
-    public int TeamIndex => teamIndex;
+    public int TeamId => teamId;
 
     /// <summary>
     /// Initializes references and sets up the click handler.
@@ -44,9 +44,9 @@ public class PlayerSlot : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     /// <summary>
     /// Sets the team index this slot belongs to.
     /// </summary>
-    public void SetTeamIndex(int index)
+    public void SetTeamId(int teamId)
     {
-        teamIndex = index;
+        this.teamId = teamId;
     }
 
     /// <summary>
@@ -56,8 +56,6 @@ public class PlayerSlot : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     {
         if (AttachedPlate != null)
             return;
-
-        Debug.Log($"[{nameof(PlayerSlot)}] OnClick: Requesting plate for Team {teamIndex}.");
 
         MatchSetup.Instance.CreatePlayerPlate(this);
     }
@@ -104,22 +102,22 @@ public class PlayerSlot : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
         playerPlate.SetOriginSlot(this);
         playerPlate.ReturnToSlot();
 
-        if (playerPlate.PlayerIndex < 0)
+        if (playerPlate.PlayerId < 0)
             return;
 
-        var playerData = MatchDataManager.Instance.Players[playerPlate.PlayerIndex];
-        if (playerData.TeamIndex == teamIndex)
+        var playerData = MatchDataManager.Instance.GetPlayerData(playerPlate.PlayerId);
+        if (playerData.TeamId == teamId)
             return;
 
-        MatchDataManager.Instance.MovePlayerToTeam(playerPlate.PlayerIndex, teamIndex);
+        MatchDataManager.Instance.MovePlayerToTeam(playerPlate.PlayerId, teamId);
     }
 
     /// <summary>
     /// Detaches and destroys the current PlayerPlate if one exists.
     /// </summary>
-    public void ClearPlate()
+    public void Clear()
     {
-        Destroy(DetachPlate());
+        Destroy(DetachPlate().gameObject);
     }
 
     /// <summary>
@@ -132,6 +130,7 @@ public class PlayerSlot : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
 
         var playerPlate = AttachedPlate;
         AttachedPlate = null;
+
         return playerPlate;
     }
 

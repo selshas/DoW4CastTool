@@ -12,7 +12,7 @@ public class FactionSelector : PickSelector<FactionData>
         return factions;
     }
 
-    protected override void OnOptionLoaded(Transform child, FactionData data)
+    protected override void OnOptionLoaded(Transform child, FactionData data, int index)
     {
         var toggle = child.GetComponent<Toggle>();
         toggle.group = toggleGroup;
@@ -24,7 +24,7 @@ public class FactionSelector : PickSelector<FactionData>
             if (!isOn)
                 return;
 
-            MatchSetup.Instance.ChangeFaction(playerData.PlayerIndex, factionName);
+            MatchSetup.Instance.ChangeFaction(playerData.PlayerId, factionName);
             Close();
         });
 

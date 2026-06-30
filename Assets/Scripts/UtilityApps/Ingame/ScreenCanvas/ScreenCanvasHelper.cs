@@ -16,15 +16,13 @@ public class ScreenCanvasHelper : Helper
         var colors = ScreenCanvas.PenColors;
         var colorNames = colors.Keys.ToArray();
 
-        var i = 0;
-        new UIItemList<string>(PenColorTemplete.transform.parent, colorNames, (child, colorName) =>
+        new UIItemList<string>(PenColorTemplete.transform.parent, colorNames, (child, colorName, i) =>
         {
             var color = colors[colorName];
 
             child.name = $"{colorName}({i + 1})";
             child.GetComponent<RawImage>().color = color;
             child.GetComponentInChildren<TextMeshProUGUI>().text = $"{i + 1}";
-            i++;
         });
     }
 

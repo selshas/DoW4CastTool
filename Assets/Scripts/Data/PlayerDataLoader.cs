@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+[DefaultExecutionOrder(-300)]
 public class PlayerDataLoader : GlobalSingletonBehaviour<PlayerDataLoader>
 {
     private static readonly string FilePath = Path.Combine(Application.streamingAssetsPath, "PlayerNames.txt");

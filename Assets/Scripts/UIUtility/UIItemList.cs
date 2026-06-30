@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class UIItemList<T> : IEnumerable<GameObject>
 {
-    public delegate void BindHandler(Transform instance, T item);
+    public delegate void BindHandler(Transform instance, T item, int index);
 
     private readonly Transform container;
     private readonly GameObject prototype;
@@ -64,7 +64,7 @@ public class UIItemList<T> : IEnumerable<GameObject>
         for (var i = 0; i < newCount; i++)
         {
             instances[i].SetActive(true);
-            onBind(instances[i].transform, items[i]);
+            onBind(instances[i].transform, items[i], i);
         }
 
         for (var i = newCount; i < instances.Count; i++)
@@ -98,7 +98,7 @@ public class UIItemList<T> : IEnumerable<GameObject>
                 break;
 
             case ObservableList<T>.ChangeType.Replace:
-                onBind(instances[index].transform, item);
+                onBind(instances[index].transform, item, index);
                 break;
 
             case ObservableList<T>.ChangeType.Clear:
@@ -111,7 +111,7 @@ public class UIItemList<T> : IEnumerable<GameObject>
     {
         var instanceObject = Object.Instantiate(prototype, container);
         instanceObject.SetActive(true);
-        onBind(instanceObject.transform, item);
+        onBind(instanceObject.transform, item, index);
         instances.Insert(index, instanceObject);
     }
 

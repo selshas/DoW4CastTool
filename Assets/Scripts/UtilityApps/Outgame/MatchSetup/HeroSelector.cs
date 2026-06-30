@@ -13,7 +13,7 @@ public class HeroSelector : PickSelector<HeroData>
         return heroes;
     }
 
-    protected override void OnOptionLoaded(Transform child, HeroData data)
+    protected override void OnOptionLoaded(Transform child, HeroData data, int index)
     {
         var toggle = child.GetComponent<Toggle>();
         toggle.group = toggleGroup;
@@ -25,7 +25,7 @@ public class HeroSelector : PickSelector<HeroData>
             if (!isOn)
                 return;
 
-            MatchSetup.Instance.ChangeHero(playerData.PlayerIndex, heroName);
+            MatchSetup.Instance.ChangeHero(playerData.PlayerId, heroName);
             Close();
         });
 

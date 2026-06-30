@@ -23,10 +23,10 @@ public class PlayerPlate : MonoBehaviour
     private PlayerSlot originSlot;
     private PlayerNameAutoCompletionList autoCompletionList;
     private Vector2 dragOffset;
-    private int playerIndex = -1;
+    private int playerId = -1;
 
     public PlayerSlot OriginSlot => originSlot;
-    public int PlayerIndex => playerIndex;
+    public int PlayerId => playerId;
     public bool Dragging { get; private set; }
 
     /// <summary>
@@ -45,7 +45,7 @@ public class PlayerPlate : MonoBehaviour
         {
             if (isOn)
             {
-                var playerData = MatchDataManager.Instance.Players[playerIndex];
+                var playerData = MatchDataManager.Instance.GetPlayerData(playerId);
                 FactionSelector.Instance.Open(playerData, toggle_factionSelection);
             }
             else
@@ -57,7 +57,7 @@ public class PlayerPlate : MonoBehaviour
         {
             if (isOn)
             {
-                var playerData = MatchDataManager.Instance.Players[playerIndex];
+                var playerData = MatchDataManager.Instance.GetPlayerData(playerId);
                 HeroSelector.Instance.Open(playerData, toggle_heroSelection);
             }
             else
@@ -66,7 +66,7 @@ public class PlayerPlate : MonoBehaviour
             }
         });
 
-        button_Remove.onClick.AddListener(Remove);
+        button_Remove.onClick.AddListener(() => MatchSetup.Instance.RemovePlayer(playerId, preventRefresh: false));
         inputField_PlayerName.onValueChanged.AddListener(OnPlayerNameChanged);
     }
 
@@ -75,10 +75,10 @@ public class PlayerPlate : MonoBehaviour
     /// </summary>
     private void OnPlayerNameChanged(string value)
     {
-        if (playerIndex < 0)
+        if (playerId < 0)
             return;
 
-        MatchDataManager.Instance.Players[playerIndex].Name = value;
+        MatchDataManager.Instance.GetPlayerData(playerId).Name = value;
 
         if (!string.IsNullOrEmpty(value))
             ShowAutoCompletion(value);
@@ -132,24 +132,19 @@ public class PlayerPlate : MonoBehaviour
     /// <summary>
     /// Sets the faction symbol and hero portrait from the player's data.
     /// </summary>
-    public void ApplyPlayerData(MatchPlayer player)
+    public void ApplyPlayerData(MatchPlayer playerData)
     {
-        playerIndex = player.PlayerIndex;
+        playerId = playerData.PlayerId;
 
-        var factionData = FactionDataLoader.Instance.GetByName(player.FactionName);
+        var factionData = FactionDataLoader.Instance.GetByName(playerData.FactionName);
         if (factionData == null)
             return;
 
         if (factionData.SymbolTexture != null)
             image_Faction.texture = factionData.SymbolTexture;
 
-        if (factionData.Heroes.TryGetValue(player.HeroName, out var heroData) && heroData.PortraitTexture != null)
+        if (factionData.Heroes.TryGetValue(playerData.HeroName, out var heroData) && heroData.PortraitTexture != null)
             image_Hero.texture = heroData.PortraitTexture;
-    }
-
-    private void Remove()
-    {
-        MatchSetup.Instance.RemovePlayerFromSlot(originSlot);
     }
 
     /// <summary>

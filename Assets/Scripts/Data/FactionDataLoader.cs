@@ -11,6 +11,7 @@ using UnityEngine;
 //       Heroes/
 //         {HeroName}/
 //           Portrait.png (or .jpg/.jpeg)
+[DefaultExecutionOrder(-300)]
 public class FactionDataLoader : GlobalSingletonBehaviour<FactionDataLoader>
 {
     public Texture2D FactionSymbolPlaceholderTexture { get; private set; }

@@ -82,5 +82,5 @@ public abstract class PickSelector<T> : SingletonBehaviour<PickSelector<T>>
     }
 
     protected abstract IList<T> CollectData();
-    protected abstract void OnOptionLoaded(Transform child, T data);
+    protected abstract void OnOptionLoaded(Transform child, T data, int index);
 }

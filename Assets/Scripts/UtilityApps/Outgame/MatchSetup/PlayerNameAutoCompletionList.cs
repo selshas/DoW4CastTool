@@ -53,7 +53,7 @@ public class PlayerNameAutoCompletionList : MonoBehaviour
     /// <summary>
     /// Binds a candidate item, setting its label and wiring hover and click via EventTrigger.
     /// </summary>
-    private void BindCandidate(Transform child, string name)
+    private void BindCandidate(Transform child, string name, int index)
     {
         var label = child.GetComponentInChildren<TextMeshProUGUI>(includeInactive: true);
         label.text = name;
