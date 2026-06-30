@@ -33,11 +33,13 @@ public class MatchSetup : UtilityAppBase
     [Header("Map Selection")]
     [SerializeField] private TMP_Dropdown dropdown_Map;
     [SerializeField] private RawImage image_MapPreview;
+    [SerializeField] private GameObject warningMsg;
 
     [Header("Actions")]
     [SerializeField] private Button button_StartMatch;
 
     private List<MapData> filteredMaps = new List<MapData>();
+    private MapData incompatibleStoredMap;
 
     private List<TeamPlate> teamPlates = new List<TeamPlate>();
 
@@ -136,45 +138,87 @@ public class MatchSetup : UtilityAppBase
 
     #region Map Selection
 
+    /// <summary>
+    /// Rebuilds map dropdown from filtered map list. Shows warning if stored map is incompatible.
+    /// </summary>
     private void RefreshMapDropdown()
     {
         var matchData = MatchDataManager.Instance;
+
         filteredMaps = MapDataLoader.GetByFilter(matchData.CurrentMatchMode, matchData.TotalPlayerCount);
+
+        dropdown_Map.onValueChanged.RemoveListener(OnMapSelected);
         dropdown_Map.ClearOptions();
 
-        if (filteredMaps.Count == 0)
-        {
-            dropdown_Map.AddOptions(new List<string> { "No Maps" });
-            dropdown_Map.interactable = false;
+        var storedMap = matchData.CurrentMap;
+        var compatible = (storedMap != null) && filteredMaps.Contains(storedMap);
+        incompatibleStoredMap = (storedMap != null && !compatible)
+            ? storedMap
+            : null;
 
-            ApplyMapPreview(null);
+        var options = new List<string> { "<color=#888888><i>Choose the map</i></color>" };
 
-            return;
-        }
+        if (incompatibleStoredMap != null)
+            options.Add($"<color=#CC6666><s>{incompatibleStoredMap.Name}</s></color>");
 
-        dropdown_Map.interactable = true;
-
-        var options = new List<string>();
         foreach (var map in filteredMaps)
             options.Add(map.Name);
 
         dropdown_Map.AddOptions(options);
-        dropdown_Map.value = 0;
+        dropdown_Map.interactable = true;
 
-        OnMapSelected(0);
-    }
-
-    private void OnMapSelected(int index)
-    {
-        if ((index < 0) || (index >= filteredMaps.Count))
+        if (compatible)
         {
-            MatchDataManager.Instance.CurrentMap = null;
-            ApplyMapPreview(null);
-            return;
+            dropdown_Map.SetValueWithoutNotify(filteredMaps.IndexOf(storedMap) + 1);
+            warningMsg.SetActive(false);
+        }
+        else if (incompatibleStoredMap != null)
+        {
+            dropdown_Map.SetValueWithoutNotify(1);
+            warningMsg.SetActive(true);
+        }
+        else
+        {
+            dropdown_Map.SetValueWithoutNotify(0);
+            warningMsg.SetActive(false);
         }
 
-        MatchDataManager.Instance.CurrentMap = filteredMaps[index];
-        ApplyMapPreview(filteredMaps[index]);
+        ApplyMapPreview(storedMap);
+
+        dropdown_Map.onValueChanged.AddListener(OnMapSelected);
+    }
+
+    /// <summary>
+    /// Handles dropdown selection. Updates stored map and refreshes preview.
+    /// </summary>
+    private void OnMapSelected(int index)
+    {
+        var matchData = MatchDataManager.Instance;
+        var mapOffset = 1 + ((incompatibleStoredMap != null) ? 1 : 0);
+        var mapIndex = index - mapOffset;
+
+        if (index == 0)
+        {
+            matchData.CurrentMap = null;
+            warningMsg.SetActive(false);
+        }
+        else if (incompatibleStoredMap != null && index == 1)
+        {
+            matchData.CurrentMap = incompatibleStoredMap;
+            warningMsg.SetActive(true);
+        }
+        else if (mapIndex >= 0 && mapIndex < filteredMaps.Count)
+        {
+            matchData.CurrentMap = filteredMaps[mapIndex];
+            warningMsg.SetActive(false);
+        }
+        else
+        {
+            matchData.CurrentMap = null;
+            warningMsg.SetActive(false);
+        }
+
+        ApplyMapPreview(matchData.CurrentMap);
     }
 
     private void ApplyMapPreview(MapData map)
