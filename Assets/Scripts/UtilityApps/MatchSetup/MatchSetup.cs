@@ -152,7 +152,8 @@ public class MatchSetup : UtilityAppBase
 
     private void RefreshMapDropdown()
     {
-        filteredMaps = MapDataLoader.GetByMatchMode(MatchDataManager.Instance.CurrentMatchMode);
+        var matchData = MatchDataManager.Instance;
+        filteredMaps = MapDataLoader.GetByFilter(matchData.CurrentMatchMode, matchData.TotalPlayerCount);
         dropdown_Map.ClearOptions();
 
         if (filteredMaps.Count == 0)
@@ -257,7 +258,9 @@ public class MatchSetup : UtilityAppBase
         plate.ApplyPlayerData(playerData);
         playerSlot.AttachPlate(plate);
         playerPlates.Add(plate);
-        
+
+        RefreshMapDropdown();
+
         Debug.Log($"[{nameof(MatchSetup)}] CreatePlayerPlate: Player {playerIndex} attached to Team {playerSlot.TeamIndex}.");
 
         return plate;
@@ -313,6 +316,8 @@ public class MatchSetup : UtilityAppBase
 
         playerPlates.Remove(playerSlot.AttachedPlate);
         playerSlot.ClearPlate();
+
+        RefreshMapDropdown();
     }
 
 }

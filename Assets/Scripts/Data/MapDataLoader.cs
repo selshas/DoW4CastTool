@@ -7,17 +7,18 @@ using UnityEngine;
 //
 //   StreamingAssets/Maps/
 //     {Map Name}/
-//       minimap.png        — minimap image (png or jpg)
-//       matchmode.txt      — supported match modes, one tag per line
+//       minimap.png                — minimap image (png or jpg)
+//       matchmode_whitelist.txt    — supported match modes, one tag per line
+//       maxplayercount.txt           — number of start points (single integer)
 //
-// matchmode.txt tags (case-insensitive):
+// matchmode_whitelist.txt tags (case-insensitive):
 //   1v1, 2v2, 3v3, FreeForAll, FFA
 //
 // Example:
 //   StreamingAssets/Maps/Gorka Valley/
 //     minimap.png
-//     matchmode.txt  →  1v1
-//                       2v2
+//     matchmode_whitelist.txt  →  1v1
+//     maxplayercount.txt          →  2
 public static class MapDataLoader
 {
     public static List<MapData> Maps { get; private set; } = new List<MapData>();
@@ -50,13 +51,21 @@ public static class MapDataLoader
         }
     }
 
-    public static List<MapData> GetByMatchMode(MatchMode mode)
+    /// <summary>
+    /// Filters maps by match mode whitelist and total player count against start points.
+    /// </summary>
+    public static List<MapData> GetByFilter(MatchMode mode, int playerCount)
     {
         var result = new List<MapData>();
         foreach (var map in Maps)
         {
-            if ((map.MatchMode & mode) != 0)
-                result.Add(map);
+            if ((map.MatchMode & mode) == 0)
+                continue;
+
+            if (map.MaxPlayerCount < playerCount)
+                continue;
+
+            result.Add(map);
         }
         return result;
     }
@@ -77,10 +86,10 @@ public static class MapDataLoader
         tex.name = mapName;
 
         var matchMode = MatchMode.None;
-        var matchModePath = Path.Combine(dirPath, "matchmode.txt");
-        if (File.Exists(matchModePath))
+        var whitelistPath = Path.Combine(dirPath, "matchmode_whitelist.txt");
+        if (File.Exists(whitelistPath))
         {
-            var lines = File.ReadAllLines(matchModePath);
+            var lines = File.ReadAllLines(whitelistPath);
             foreach (var line in lines)
             {
                 var tag = line.Trim().ToLowerInvariant();
@@ -92,11 +101,20 @@ public static class MapDataLoader
             }
         }
 
+        var startPointCount = 0;
+        var startPointsPath = Path.Combine(dirPath, "maxplayercount.txt");
+        if (File.Exists(startPointsPath))
+        {
+            var text = File.ReadAllText(startPointsPath).Trim();
+            int.TryParse(text, out startPointCount);
+        }
+
         return new MapData
         {
             Name = mapName,
             MinimapTexture = tex,
             MatchMode = matchMode,
+            MaxPlayerCount = startPointCount,
         };
     }
 

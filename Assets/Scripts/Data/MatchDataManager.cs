@@ -11,6 +11,8 @@ public class MatchDataManager : GlobalSingletonBehaviour<MatchDataManager>
     public readonly List<MatchTeam> Teams = new List<MatchTeam>();
     public readonly List<MatchPlayer> Players = new List<MatchPlayer>();
 
+    public int TotalPlayerCount => Teams.Sum(t => t.PlayerCount);
+
     private readonly Stack<int> reservedPlayerIndices = new Stack<int>();
 
     public static readonly Dictionary<MatchMode, MatchConfig> MATCH_CONFIGS = new Dictionary<MatchMode, MatchConfig>
