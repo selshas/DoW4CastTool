@@ -22,6 +22,7 @@ using UnityEngine;
 public static class MapDataLoader
 {
     public static List<MapData> Maps { get; private set; } = new List<MapData>();
+    public static Texture2D NotFoundTexture { get; private set; }
 
     private static readonly Dictionary<string, MatchMode> MatchModeTagLookup = new Dictionary<string, MatchMode>()
     {
@@ -39,6 +40,8 @@ public static class MapDataLoader
         var root = Path.Combine(Application.streamingAssetsPath, "Maps");
         if (!Directory.Exists(root))
             return;
+
+        NotFoundTexture = LoadNotFoundTexture(root);
 
         var mapDirs = Directory.GetDirectories(root);
         System.Array.Sort(mapDirs);
@@ -116,6 +119,24 @@ public static class MapDataLoader
             MatchMode = matchMode,
             MaxPlayerCount = startPointCount,
         };
+    }
+
+    /// <summary>
+    /// Loads the NotFound.png fallback texture from the Maps root directory.
+    /// </summary>
+    private static Texture2D LoadNotFoundTexture(string mapsRoot)
+    {
+        var path = Path.Combine(mapsRoot, "NotFound.png");
+        if (!File.Exists(path))
+            return null;
+
+        var bytes = File.ReadAllBytes(path);
+        var tex = new Texture2D(2, 2);
+        if (!tex.LoadImage(bytes))
+            return null;
+
+        tex.name = "NotFound";
+        return tex;
     }
 
     private static string FindImageFile(string dirPath)
